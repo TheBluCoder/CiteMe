@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  main-service:
+    build:
+      context: ./backend/mainService
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+    volumes:
+      - ./backend/mainService:/app
+    networks:
+      - citeme-network
+
+  metrics-service:
+    build:
+      context: ./backend/metricsService
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=production
+    volumes:
+      - ./backend/metricsService:/app
+    networks:
+      - citeme-network
+
+networks:
+  citeme-network:
+    driver: bridge 
