@@ -406,15 +406,11 @@ class CitationService:
             )
 
             if isinstance(citation_result, Exception):
-                logger.exception(
-                    f"Citation generation failed: {
-                        str(citation_result)}")
+                logger.exception(f"Citation generation failed: {str(citation_result)}")
                 raise CitationGenerationError("Failed to generate citations")
 
             if isinstance(credibility_metrics, Exception):
-                logger.exception(
-                    f"Credibility metrics failed: {
-                        str(credibility_metrics)}")
+                logger.exception(f"Credibility metrics failed: {str(credibility_metrics)}")
                 credibility_metrics = []
 
             # Calculate overall credibility score
@@ -437,9 +433,7 @@ class CitationService:
             logger.exception(f"Error generating citation: {e}")
             return False
         except Exception as e:
-            logger.exception(
-                f"Unexpected error in citation generation: {
-                    str(e)}")
+            logger.exception(f"Unexpected error in citation generation: {str(e)}")
             return False
 
 
