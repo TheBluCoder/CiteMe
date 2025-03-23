@@ -1,4 +1,4 @@
-aioredis==2.0.1
+redis>=4.2.0
 fastapi==0.115.11
 issn==0.0.3
 pydantic==2.10.6
