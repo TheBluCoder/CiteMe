@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, Request,status
+from fastapi import APIRouter, Form, Request, status
 from fastapi.responses import JSONResponse
 from typing import Dict, Any
 from src.services.citation_service import CitationService
@@ -9,12 +9,14 @@ from src.models.schema import CitationInput
 
 
 filename = os.path.basename(__file__)
-logger = setup_logging(filename=filename)   
+logger = setup_logging(filename=filename)
 
 router = APIRouter()
 
-@router.post("/get_citation",status_code=status.HTTP_200_OK)
-async def get_citation(request: Request, payload: CitationInput) -> Dict[str, Any]:
+
+@router.post("/get_citation", status_code=status.HTTP_200_OK)
+async def get_citation(
+        request: Request, payload: CitationInput) -> Dict[str, Any]:
     """Generate citations for the provided content.
 
     Args:
@@ -26,12 +28,16 @@ async def get_citation(request: Request, payload: CitationInput) -> Dict[str, An
     Returns:
         Dict[str, Any]: Generated citations and metadata
     """
-    citation_service = CitationService(PC=request.app.state.pc, summarize_llm=request.app.state.summarize_llm, citation_llm=request.app.state.citation_llm, scraper=request.app.state.async_content_scraper)
+    citation_service = CitationService(
+        PC=request.app.state.pc,
+        summarize_llm=request.app.state.summarize_llm,
+        citation_llm=request.app.state.citation_llm,
+        scraper=request.app.state.async_content_scraper)
     try:
         title = payload.title
         content = payload.content
         citation_style = payload.citationStyle or "APA"
-        
+
         # Handle each form type accordingly
         if payload.formType == "auto":
             result = await citation_service.process_citation(
@@ -52,7 +58,7 @@ async def get_citation(request: Request, payload: CitationInput) -> Dict[str, An
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 content={"error": "Invalid formType"}
             )
-            
+
         if not result:
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -71,4 +77,3 @@ async def get_citation(request: Request, payload: CitationInput) -> Dict[str, An
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": "Internal Server Error"}
         )
-

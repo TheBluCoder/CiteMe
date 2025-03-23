@@ -5,6 +5,7 @@ import json
 from mixedbread_ai.client import RerankingResponse
 app = FastAPI()
 
+
 class DocumentMetadata(BaseModel):
     access_date: str
     author: str
@@ -19,21 +20,25 @@ class DocumentMetadata(BaseModel):
     type: str
     volume: str
 
+
 class Document(BaseModel):
     id: str
     metadata: DocumentMetadata
     page_content: str
+
 
 class RerankedResult(BaseModel):
     index: int
     score: float
     document: Document
 
+
 class RerankResponse(BaseModel):
     model: str
     data: List[RerankedResult]
 
-def convert_rerank_result(rerank_result:RerankResponse) -> Dict[str, Any]:
+
+def convert_rerank_result(rerank_result: RerankResponse) -> Dict[str, Any]:
     """
     Convert a rerank response object to a dictionary format.
 
@@ -60,7 +65,9 @@ def convert_rerank_result(rerank_result:RerankResponse) -> Dict[str, Any]:
         ]
     }
 
-def filter_results(rerank_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+
+def filter_results(
+        rerank_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Filter pinecone rerank results based on score threshold and remove duplicates.
 
@@ -76,14 +83,16 @@ def filter_results(rerank_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     for result in rerank_results:
         doc = result.data[0]
         benchmark = 0.6
-        if doc.document.id not in seen_ids and doc.score >=benchmark:
+        if doc.document.id not in seen_ids and doc.score >= benchmark:
             unique_results.append(doc.document.metadata)
             with open("sample_output\\rerank_result.json", "w") as f:
-                json.dump(unique_results, f, indent=4)  
+                json.dump(unique_results, f, indent=4)
             seen_ids.add(doc.document.id)
     return unique_results
 
-def filter_mixbread_results(rerank_results: RerankingResponse) -> List[Dict[str, Any]]:
+
+def filter_mixbread_results(
+        rerank_results: RerankingResponse) -> List[Dict[str, Any]]:
     """
     Filter Mixbread reranking results based on score threshold and remove duplicates.
 
@@ -94,17 +103,15 @@ def filter_mixbread_results(rerank_results: RerankingResponse) -> List[Dict[str,
         List[Dict[str, Any]]: Filtered list of unique document metadata meeting the score threshold
     """
 
-
     unique_results = []
     seen_ids = set()
     for result in rerank_results:
         benchmark = 0.6
         result = result.data[0]
-        doc:dict =result.input.get("metadata")
-        if doc.get("id") not in seen_ids and result.score >=benchmark:
+        doc: dict = result.input.get("metadata")
+        if doc.get("id") not in seen_ids and result.score >= benchmark:
             seen_ids.add(doc.pop("id"))
             unique_results.append(doc)
     # with open("sample_output\\rerank_result_mixbread.json", "a") as f:
     #     json.dump(unique_results, f, indent=4)
     return unique_results
-

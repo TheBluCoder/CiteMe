@@ -3,6 +3,9 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from app import app
 from unittest.mock import AsyncMock, MagicMock
+from dotenv import load_dotenv
+
+load_dotenv()
 
 @pytest.fixture
 def test_client():

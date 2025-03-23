@@ -16,7 +16,7 @@ Classes:
 """
 
 from urllib3.util import parse_url
-from typing import Dict, Optional,Union
+from typing import Dict, Optional, Union
 import os
 from src.scraper.site_specific.async_ibm_scraper import IBMScraper
 from src.scraper.site_specific.async_frontier_scraper import FrontierScraper
@@ -28,7 +28,7 @@ from src.config.playwright_driver import PlaywrightDriver
 import asyncio
 from datetime import datetime
 from playwright.async_api import Browser, BrowserContext
-from src.config.log_config  import setup_logging
+from src.config.log_config import setup_logging
 from datetime import timezone as tz
 
 
@@ -44,6 +44,8 @@ It handles concurrent requests and content extraction efficiently using asyncio.
 Classes:
     AsyncContentScraper: Main class for handling asynchronous content scraping operations
 """
+
+
 class AsyncContentScraper:
     """
     A class to handle asynchronous content scraping operations.
@@ -59,7 +61,7 @@ class AsyncContentScraper:
     Methods:
         get_content(url: str) -> str:
             Asynchronously retrieves content from a given URL
-        
+
         process_urls(urls: List[str]) -> List[Dict]:
             Processes multiple URLs concurrently and returns their content
     """
@@ -82,14 +84,13 @@ class AsyncContentScraper:
             current_download_path (str): Path where downloads are currently being stored
         """
 
-        self.scraper_driver:PlaywrightDriver = playwright_driver
-        self._browser:Browser = None
-        self._context:BrowserContext = None
-        self.current_download_path:str = None
-
+        self.scraper_driver: PlaywrightDriver = playwright_driver
+        self._browser: Browser = None
+        self._context: BrowserContext = None
+        self.current_download_path: str = None
 
     async def __aenter__(self):
-        self.scraper_driver = self.scraper_driver or await PlaywrightDriver.create() 
+        self.scraper_driver = self.scraper_driver or await PlaywrightDriver.create()
         self._browser = await self.scraper_driver.get_browser()
         self._context = await self.scraper_driver.get_context()
         await self._setup_scrapers()
@@ -102,21 +103,27 @@ class AsyncContentScraper:
                 await self._context.close()
         except Exception as e:
             # Log the exception even if it occurred during cleanup
-            logger.critical(f"Exception while closing context: {e}", exc_info=True) 
-
+            logger.critical(
+                f"Exception while closing context: {e}",
+                exc_info=True)
 
             if exc_type:
-                logger.error("Exception in context manager", exc_info=(exc_type, exc_val, exc_tb))
-
+                logger.error(
+                    "Exception in context manager", exc_info=(
+                        exc_type, exc_val, exc_tb))
 
     async def _setup_scrapers(self):
-        self.scrapers:Dict[BasePlaywrightScraper] = {
-            "research.ibm.com": IBMScraper(self._context, self.scraper_driver),
-            "www.frontiersin.org": FrontierScraper(self._context, self.scraper_driver),
-            "default": GenericScraper(self._context, self.scraper_driver)
-        }
+        self.scrapers: Dict[BasePlaywrightScraper] = {
+            "research.ibm.com": IBMScraper(
+                self._context, self.scraper_driver), "www.frontiersin.org": FrontierScraper(
+                self._context, self.scraper_driver), "default": GenericScraper(
+                self._context, self.scraper_driver)}
 
-    async def get_pdf(self, target_url: str, storage_path: Optional[str] = None) -> tuple[str, Optional[str], str] | bool:
+    async def get_pdf(self,
+                      target_url: str,
+                      storage_path: Optional[str] = None) -> tuple[str,
+                                                                   Optional[str],
+                                                                   str] | bool:
         """Download a PDF from the specified URL.
 
         Args:
@@ -133,37 +140,47 @@ class AsyncContentScraper:
         try:
             parsed_url = parse_url(target_url)
             base_url = f"{parsed_url.scheme}://{parsed_url.host}"
-            
+
             # Set up download path
             if not storage_path:
-                default_path = parsed_url.host + str(datetime.now(tz.utc).strftime("%d_%m_%Y_%H_%M_%S"))
-                storage_path = os.path.join(os.getcwd(), "downloads", default_path)
+                default_path = parsed_url.host + \
+                    str(datetime.now(tz.utc).strftime("%d_%m_%Y_%H_%M_%S"))
+                storage_path = os.path.join(
+                    os.getcwd(), "downloads", default_path)
             else:
                 storage_path = os.path.abspath(storage_path)
 
             self.current_download_path = storage_path
-            
+
             # Check robots.txt
-            can_fetch, _ = WebUtils.check_robots_txt(base_url, target_url, "Mozilla/5.0")
+            can_fetch, _ = WebUtils.check_robots_txt(
+                base_url, target_url, "Mozilla/5.0")
             if not can_fetch:
                 logger.warning(f"can't fetch {target_url}")
                 return False
-            
+
             # Ensure download directory exists
             if not FileUtils.ensure_directory(storage_path):
                 logger.critical("Failed to create download directory")
                 raise OSError("Failed to create download directory")
-                   
+
             # Get appropriate scraper and download
-            scraper:BasePlaywrightScraper= self.scrapers.get(parsed_url.host, self.scrapers["default"])
+            scraper: BasePlaywrightScraper = self.scrapers.get(
+                parsed_url.host, self.scrapers["default"])
             file_path = await scraper.download_pdf(target_url, storage_path)
-            return target_url, file_path , storage_path   
-            
+            return target_url, file_path, storage_path
+
         except Exception as e:
             logger.exception(f"Error in get_pdf: {e}")
             return False
 
-    async def get_pdfs(self, target_urls: list[str], storage_path: Optional[str] = None) -> Dict[str, Union[int, Dict[str, str], Optional[str]]]:
+    async def get_pdfs(self,
+                       target_urls: list[str],
+                       storage_path: Optional[str] = None) -> Dict[str,
+                                                                   Union[int,
+                                                                         Dict[str,
+                                                                              str],
+                                                                         Optional[str]]]:
         """Download multiple PDFs concurrently from the provided URLs.
 
         Args:
@@ -178,28 +195,29 @@ class AsyncContentScraper:
                 - 'storage_path': The base storage directory path used
         """
         results = {"count": 0, "paths": {}, "storage_path": None}
-        
-        storage_path = storage_path + str(datetime.now(tz.utc).strftime("%d_%m_%Y_%H_%M_%S")) if storage_path else None
-        
+
+        storage_path = storage_path + \
+            str(datetime.now(tz.utc).strftime("%d_%m_%Y_%H_%M_%S")) if storage_path else None
+
         # Create tasks for all downloads
         tasks = [self.get_pdf(url, storage_path) for url in target_urls]
-        
+
         # Execute downloads concurrently
         async_result = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         # Process results
         for result in async_result:
             if isinstance(result, bool):
                 continue
-            url, path , storage_path, = result
+            url, path, storage_path, = result
             if path:
                 results["count"] += 1
                 results["paths"][url] = path
                 results["storage_path"] = storage_path
             else:
                 logger.exception(f"Failed to get pdf from {url}")
-                
+
         if results["count"] == 0:
             logger.warning("No PDFs were successfully downloaded.")
-        
+
         return results

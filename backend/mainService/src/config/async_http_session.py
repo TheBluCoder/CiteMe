@@ -1,5 +1,6 @@
 from aiohttp import ClientSession
 
+
 class AsyncHTTPClient:
     """Manages a shared aiohttp session."""
     session = None
@@ -16,7 +17,7 @@ class AsyncHTTPClient:
             cls.session = None
 
     @classmethod
-    async def getSession(cls)->ClientSession:
+    async def getSession(cls) -> ClientSession:
         if cls.session is None:
             await cls.init_session()
         return cls.session

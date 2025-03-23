@@ -1,5 +1,6 @@
 from groq import Groq
-import os,re
+import os
+import re
 import json
 from src.config.log_config import setup_logging
 from typing import Optional
@@ -12,21 +13,22 @@ logger = setup_logging(filename=filename)
 
 class Summarize_llm:
 
-    def __init__(self, api_key:str= os.getenv("GROQ_API_KEY"), llm_model:str="llama-3.3-70b-versatile"):
+    def __init__(self, api_key: str = os.getenv("GROQ_API_KEY"),
+                 llm_model: str = "llama-3.3-70b-versatile"):
         self.api_key = api_key
-        self.client = Groq( api_key= self.api_key)
+        self.client = Groq(api_key=self.api_key)
         self.llm_model = llm_model
 
     def getKeywordSearchTerm(self, document: str) -> Optional[str]:
         """
         Generate a search term from the provided document using LLM.
-        
+
         Args:
             document: Input text to generate search term from
-            
+
         Returns:
             str: Generated search term or error message
-            
+
         Raises:
             LLMError: If there's an error in LLM processing
         """
@@ -39,11 +41,13 @@ class Summarize_llm:
             # Trim document if too long
             max_length = 4000  # Adjust based on model's context window
             if len(document) > max_length:
-                logger.warning(f"Document truncated from {len(document)} to {max_length} characters")
+                logger.warning(
+                    f"Document truncated from {
+                        len(document)} to {max_length} characters")
                 document = document[:max_length]
 
             # Make API call with error handling
-            
+
             completion = self.client.chat.completions.create(
                 model=self.llm_model,
                 messages=[
@@ -57,17 +61,17 @@ class Summarize_llm:
                 max_tokens=1024,
                 stream=False,
                 stop=None,
-                response_format={"type": "json_object"}   
+                response_format={"type": "json_object"}
             )
             result = completion.choices[0].message.content
-            return json.loads(result).get("search_term") or json.loads(result).get("message")
+            return json.loads(result).get(
+                "search_term") or json.loads(result).get("message")
         except JSONDecodeError:
             logger.error("Failed to decode JSON response")
-            result = re.sub(r'^(```json\n|```|json|\n|\{)|(```|\n|\})$', '',result) 
+            result = re.sub(
+                r'^(```json\n|```|json|\n|\{)|(```|\n|\})$', '', result)
             return result
-        
+
         except Exception as e:
             logger.error(f"Unexpected error in getKeywordSearchTerm: {str(e)}")
             raise SearchKeyGenerationError(f"Unexpected error: {str(e)}")
-
-    

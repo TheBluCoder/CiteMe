@@ -3,10 +3,11 @@ import random
 from protego import Protego
 import logging
 
+
 class WebUtils:
     """
     A utility class providing static methods for web-related operations.
-    
+
     This class includes functionality for checking robots.txt rules and retrieving file sizes
     from URLs. It implements proper web crawling etiquette by respecting robots.txt directives
     and implementing appropriate delays between requests.
@@ -28,9 +29,10 @@ class WebUtils:
         """
         try:
             rb_txt = requests.get(f"{base_url}/robots.txt")
-            if rb_txt.status_code == 404: #robots.txt not found.
-                return True, 0 #allow crawling, no delay.
-            rb_txt.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx) other than 404
+            if rb_txt.status_code == 404:  # robots.txt not found.
+                return True, 0  # allow crawling, no delay.
+            # Raise HTTPError for bad responses (4xx or 5xx) other than 404
+            rb_txt.raise_for_status()
 
             rp = Protego.parse(rb_txt.text)
             can_fetch = rp.can_fetch(target_url, user_agent)
@@ -41,11 +43,10 @@ class WebUtils:
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Error fetching robots.txt: {e}")
-            return True, 0 #allow crawling, no delay.
+            return True, 0  # allow crawling, no delay.
         except Exception as e:
             logging.error(f"Error processing robots.txt: {e}")
             return False, -1
-
 
     @staticmethod
     def get_file_size(url: str) -> int:

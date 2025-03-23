@@ -1,13 +1,15 @@
-import json, os,re
+import json
+import os
+import re
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage
 from azure.core.credentials import AzureKeyCredential
-from typing import List, Optional ,Dict, Union, Any
-from src.llm.Instructions import  *
+from typing import List, Optional, Dict, Union, Any
+from src.llm.Instructions import *
 from src.llm.chat_llm.Gemini_llm import Genai_cite
 import asyncio
 from src.config.log_config import setup_logging
-from src.custom_exceptions.api_exceptions import MissingApiKeyException,InvalidApiKeyException, MissingEndpointException
+from src.custom_exceptions.api_exceptions import MissingApiKeyException, InvalidApiKeyException, MissingEndpointException
 from azure.core.exceptions import HttpResponseError
 from azure.ai.inference.models import ChatCompletions
 from src.custom_exceptions.llm_exceptions import CitationGenerationError
@@ -15,7 +17,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from src.config.config import concurrency_config
 
-logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
+    logging.WARNING)
 
 
 filename = os.path.basename(__file__)
@@ -23,14 +26,20 @@ logger = setup_logging(filename=filename)
 RESPONSE_CLEANUP_PATTERN = re.compile(r'^(```json\n|```|json|\n)|(```|\n)$')
 
 
-
-_executor = ThreadPoolExecutor(max_workers=concurrency_config.DEFAULT_CONCURRENT_WORKERS)
+_executor = ThreadPoolExecutor(
+    max_workers=concurrency_config.DEFAULT_CONCURRENT_WORKERS)
 
 
 class Citation:
     model = "Phi-4"
-    embedding_model ="text-embedding-3-small"
-    def __init__(self, source: List[str] = None, api_key:str = None, model: Optional[str] = None, endpoint: Optional[str] = None) -> None:
+    embedding_model = "text-embedding-3-small"
+
+    def __init__(
+            self,
+            source: List[str] = None,
+            api_key: str = None,
+            model: Optional[str] = None,
+            endpoint: Optional[str] = None) -> None:
         """Initialize the Azure hosted LLM client.
 
         Args:
@@ -43,12 +52,17 @@ class Citation:
         self.model_name = model or self.model
         self.source = source
         self.client = ChatCompletionsClient(
-                    endpoint=endpoint or get_azure_endpoint("AZURE_MODELS_ENDPOINT"),
-                        credential=AzureKeyCredential(self.api_key),
-                    )
+            endpoint=endpoint or get_azure_endpoint("AZURE_MODELS_ENDPOINT"),
+            credential=AzureKeyCredential(self.api_key),
+        )
         self.merger = Genai_cite()
-    
-    async def cite(self, text: List[str], citation_style: str) -> Dict[str, Union[str, List[Dict[str, str]]]]:
+
+    async def cite(self,
+                   text: List[str],
+                   citation_style: str) -> Dict[str,
+                                                Union[str,
+                                                      List[Dict[str,
+                                                                str]]]]:
         """Generate citations for given text passages.
 
         Args:
@@ -61,16 +75,20 @@ class Citation:
         # amazonq-ignore-next-line
         batch_size = max(1, len(text) // 10)
         try:
-            tasks = [self._cite(text[i:i+batch_size], citation_style) for i in range(0, len(text), batch_size)]
+            tasks = [self._cite(text[i:i + batch_size], citation_style)
+                     for i in range(0, len(text), batch_size)]
             citations = await asyncio.gather(*tasks)
             merged_citations = await self.merger.merge_citation(citations, format=citation_style)
         except Exception as e:
             logger.exception(f"Error in citation generation: {e}")
-            raise CitationGenerationError(f"Citation generation failed for {len(text)} text passages: {e}") from e
-            
+            raise CitationGenerationError(
+                f"""Citation generation failed for {
+                    len(text)} text passages: {e}""") from e
+
         return merged_citations
 
-    async def _cite(self, text: str|List[str], format: str) -> Dict[str, Any]:
+    async def _cite(self, text: str |
+                    List[str], format: str) -> Dict[str, Any]:
         """Internal method to process citation requests.
 
         Args:
@@ -81,22 +99,25 @@ class Citation:
             Dict[str, Any]: Processed citation results
         """
         messages = [
-            SystemMessage(content=SYSTEM_INSTRUCTION.format(format=format)),
-            UserMessage(content=USER_INSTRUCTION.format(text=text, sources=self.source, format=format)),
-        ]
+            SystemMessage(
+                content=SYSTEM_INSTRUCTION.format(
+                    format=format)), UserMessage(
+                content=USER_INSTRUCTION.format(
+                    text=text, sources=self.source, format=format)), ]
         model = self.model_name
         # Offload blocking work to a thread
         logger.info(f"Sending request to Azure API with messages")
         result = await asyncio.get_running_loop().run_in_executor(
-            _executor, 
-            self._blocking_citation_request, 
-            messages, 
+            _executor,
+            self._blocking_citation_request,
+            messages,
             model
         )
 
         return result
 
-    def _blocking_citation_request(self, messages: List[str], model_name: str = None) -> Dict[str, Any]:
+    def _blocking_citation_request(
+            self, messages: List[str], model_name: str = None) -> Dict[str, Any]:
         """Make a blocking citation request to the Azure API.
 
         Args:
@@ -107,48 +128,51 @@ class Citation:
             Dict[str, Any]: Raw API response containing citation data
         """
         try:
-            response:ChatCompletions = self.client.complete(messages=messages, model=(model_name or self.model_name),temperature=0.1,top_p=0.1)
-            response_content =  response.choices[0].message.content
+            response: ChatCompletions = self.client.complete(messages=messages, model=(
+                model_name or self.model_name), temperature=0.1, top_p=0.1)
+            response_content = response.choices[0].message.content
             # amazonq-ignore-next-line
             response_content = response_content.strip()
-            response_content = re.sub(RESPONSE_CLEANUP_PATTERN, '',response_content)
-            result =   json.loads(response_content)
+            response_content = re.sub(
+                RESPONSE_CLEANUP_PATTERN, '', response_content)
+            result = json.loads(response_content)
         except HttpResponseError as e:
             logger.exception(f"Error in establishing azure client: {e}")
             raise e
         except json.JSONDecodeError as e:
             logger.warning(f"Error in decoding json: {e}")
-            return {"unformatted_response":response}
+            return {"unformatted_response": response}
         return result
-    
+
 
 def validate_azure_api_key(api_key: str) -> bool:
-        """
-        Validate Azure API key format.
-        
-        Args:
-            api_key (str): The API key to validate
-            
-        Returns:
-            bool: True if valid, False otherwise
-            
-        """
-        # Basic pattern for Azure API keys - adjust as needed
-        pattern = r'^[a-zA-Z0-9]{32,}$'
-        return bool(re.match(pattern, api_key))
-    
-def get_azure_api_key(key:str) -> str:
+    """
+    Validate Azure API key format.
+
+    Args:
+        api_key (str): The API key to validate
+
+    Returns:
+        bool: True if valid, False otherwise
+
+    """
+    # Basic pattern for Azure API keys - adjust as needed
+    pattern = r'^[a-zA-Z0-9]{32,}$'
+    return bool(re.match(pattern, api_key))
+
+
+def get_azure_api_key(key: str) -> str:
     """
     Retrieve and validate Azure API key from environment variables.
-    
+
     Returns:
         str: Valid API key
-        
+
     Raises:
         MissingApiKeyException: If API key is not set in environment
         InvalidApiKeyException: If API key format is invalid
     """
-    api_key = os.getenv(key,"")
+    api_key = os.getenv(key, "")
 
     if not api_key:
         raise MissingApiKeyException(
@@ -161,7 +185,8 @@ def get_azure_api_key(key:str) -> str:
         )
     return api_key
 
-def get_azure_endpoint(endpoint:str) -> str:
+
+def get_azure_endpoint(endpoint: str) -> str:
     """
     Retrieve and validate Azure endpoint from environment variables.
 
@@ -173,16 +198,16 @@ def get_azure_endpoint(endpoint:str) -> str:
         InvalidEndpointException: If endpoint format
     """
 
-    endpoint = os.getenv(endpoint,"")
+    endpoint = os.getenv(endpoint, "")
     if not endpoint:
         raise MissingEndpointException(
             "AZURE_ENDPOINT key missing from environment variables"
         )
     return endpoint
 
+
 def __del__(self):
     """
     Cleanup resources when the object is destroyed.
     """
     _executor.shutdown(wait=True)
-

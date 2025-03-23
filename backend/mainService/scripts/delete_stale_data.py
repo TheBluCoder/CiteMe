@@ -16,9 +16,9 @@ logger = setup_logging(filename=log_filename)
 INDEX_DICT_FILE = 'index_dict.json'
 THRESHOLD_HOURS = 2  # Delete indexes older than 2 hours
 
+
 def load_index_dict() -> Dict[str, List[str]]:
-    """Load the index dictionary from the JSON file.
-    
+    """Load the index dictionary from the JSON file.    
     Returns:
         Dict[str, List[str]]: Dictionary mapping hourly timestamps to lists of index names.
         Returns defaultdict with empty list as default if file doesn't exist.
@@ -28,6 +28,7 @@ def load_index_dict() -> Dict[str, List[str]]:
             return defaultdict(list, json.load(f))
     return defaultdict(list)
 
+
 def save_index_dict(index_dict: Dict[str, List[str]]) -> None:
     """Save the index dictionary to the JSON file.
     
@@ -36,6 +37,7 @@ def save_index_dict(index_dict: Dict[str, List[str]]) -> None:
     """
     with open(INDEX_DICT_FILE, 'w') as f:
         json.dump(dict(index_dict), f)  # Convert defaultdict to regular dict for JSON serialization
+
 
 async def delete_index(index_name: str, pc:Pinecone) -> Tuple[str, bool, str]:
     """Delete a single Pinecone index.
@@ -55,6 +57,7 @@ async def delete_index(index_name: str, pc:Pinecone) -> Tuple[str, bool, str]:
         return index_name, True, ""
     except Exception as e:
         return index_name, False, str(e)
+
 
 async def delete_old_indexes(threshold_hours: int = THRESHOLD_HOURS) -> None:
     """Asynchronously delete Pinecone indexes older than the threshold.
@@ -94,8 +97,7 @@ async def delete_old_indexes(threshold_hours: int = THRESHOLD_HOURS) -> None:
         results = await asyncio.gather(
             *[delete_index(index_name, pc=pc) for index_name in indexes_to_delete],
             return_exceptions=True
-        )
-        
+        )        
         # Process results
         for result in results:
             if isinstance(result, Exception):

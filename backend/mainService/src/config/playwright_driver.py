@@ -1,7 +1,8 @@
 from playwright.async_api import async_playwright, Playwright, Browser, BrowserContext, Page, Route, Request
 from typing import List
 import threading
-import asyncio,os
+import asyncio
+import os
 from src.config.config import scraper_config
 from src.config.log_config import setup_logging
 
@@ -14,7 +15,7 @@ and provides methods for creating and managing browser contexts and pages with c
 
 Classes:
     PlaywrightDriver: A singleton class that manages Playwright browser instances and contexts.
-        
+
 Features:
     - Thread-safe singleton browser instance management
     - Async-compatible browser initialization and operations
@@ -46,6 +47,8 @@ Note:
 
 log_filename = os.path.basename(__file__)
 logger = setup_logging(filename=log_filename)
+
+
 class PlaywrightDriver:
     """
     A singleton class that manages Playwright browser instances and contexts.
@@ -63,23 +66,23 @@ class PlaywrightDriver:
     """
 
     _instance = None
-    _playwright:Playwright   = None
-    _browser:Browser = None
+    _playwright: Playwright = None
+    _browser: Browser = None
     _lock = threading.Lock()
-    _async_lock = asyncio.Lock()  
-    _contexts:List[BrowserContext] = []
-    _current_context:BrowserContext = None
+    _async_lock = asyncio.Lock()
+    _contexts: List[BrowserContext] = []
+    _current_context: BrowserContext = None
 
     def __new__(cls):
         with cls._lock:
             if not hasattr(cls, 'instance'):
-                cls.instance:PlaywrightDriver = super().__new__(cls)
+                cls.instance: PlaywrightDriver = super().__new__(cls)
                 cls.instance._browser = None
             return cls.instance
-        
+
     def __init__(self):
-       pass
-    
+        pass
+
     @classmethod
     async def create(cls):
         """
@@ -98,23 +101,21 @@ class PlaywrightDriver:
             await cls._instance.__initialize_browser()
         return cls._instance
 
-
-
-    async def __initialize_browser(self)->Browser:
-       """
-        Initialize the browser instance with custom configurations.
-
-        Returns:
-            Browser: Configured browser instance
-
-        Raises:
-            Exception: If browser initialization fails
-
-        Note:
-            Configures browser with specific arguments to disable automation detection
+    async def __initialize_browser(self) -> Browser:
         """
+         Initialize the browser instance with custom configurations.
 
-       async with self._async_lock:  
+         Returns:
+             Browser: Configured browser instance
+
+         Raises:
+             Exception: If browser initialization fails
+
+         Note:
+             Configures browser with specific arguments to disable automation detection
+         """
+
+        async with self._async_lock:
             if self._browser:
                 return self._browser
 
@@ -134,8 +135,8 @@ class PlaywrightDriver:
                 logger.critical(f"Error while initializing browser: {e}")
                 raise e
             return self._browser
-    
-    async def get_new_context(self)->BrowserContext:
+
+    async def get_new_context(self) -> BrowserContext:
         """
         Create and return a new browser context.
 
@@ -151,9 +152,9 @@ class PlaywrightDriver:
         context = await self._browser.new_context(accept_downloads=True)
         self._contexts.append(context)
         self._current_context = context
-        return context   
-    
-    async def get_browser(self)->Playwright:
+        return context
+
+    async def get_browser(self) -> Playwright:
         """
         Get the current browser instance, initializing it if necessary.
 
@@ -164,26 +165,26 @@ class PlaywrightDriver:
         if not self._browser:
             self._browser = await self.__initialize_browser()
         return self._browser
-    
+
     async def close_browser(self):
         """
         Close all browser contexts and the browser instance.
 
         Closes all active contexts before closing the browser instance.
-        
+
         Raises:
             Exception: If there's an error during browser closure
         """
 
         try:
-           if self._browser:
+            if self._browser:
                 for context in self._contexts:
                     await context.close()
                 await self._browser.close()
         except Exception as e:
             logger.exception(f"Error while closing browser: {e}")
-    
-    async def get_new_page(self, context:BrowserContext)->Page:
+
+    async def get_new_page(self, context: BrowserContext) -> Page:
         """
         Create a new page in the specified browser context with stealth mode.
 
@@ -197,8 +198,8 @@ class PlaywrightDriver:
         page = await context.new_page()
         await page.route("**/*", self.handle)
         return page
-    
-    async def handle(self, route:Route, request:Request):
+
+    async def handle(self, route: Route, request: Request):
         """
         Handle browser requests by injecting custom headers.
 
@@ -213,12 +214,11 @@ class PlaywrightDriver:
         # override headers
         headers = {
             **request.headers,
-           **scraper_config.HTTP_HEADERS,
-            "SEC_CH_UA" :"\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
+            **scraper_config.HTTP_HEADERS,
+            "SEC_CH_UA": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"",
         }
         await route.continue_(headers=headers)
 
-    
     async def quit(self):
         """
         Clean up all browser resources.
@@ -229,16 +229,15 @@ class PlaywrightDriver:
             Exception: If there's an error during cleanup
         """
 
-
         try:
             if self._browser:
                 await self.close_browser()
             if self._playwright:
                 await self._playwright.stop()
         except Exception as e:
-            logger.exception(f"Error while quitting driver: {e}") 
-    
-    async def get_context(self)->BrowserContext:
+            logger.exception(f"Error while quitting driver: {e}")
+
+    async def get_context(self) -> BrowserContext:
         """
         Get the current context or create a new one if none exists.
 
@@ -249,8 +248,8 @@ class PlaywrightDriver:
         if not self._contexts:
             return await self.get_new_context()
         return self._current_context
-    
-    async def get_current_context(self)->BrowserContext|None:
+
+    async def get_current_context(self) -> BrowserContext | None:
         """
         Get the currently active browser context.
 
@@ -259,14 +258,13 @@ class PlaywrightDriver:
         """
 
         return self._current_context
-    
-    async def set_current_context(self, context:BrowserContext):
+
+    async def set_current_context(self, context: BrowserContext):
         """
         Set the current active browser context.
 
         Args:
             context (BrowserContext): Browser context to set as current
         """
-
 
         self._current_context = context

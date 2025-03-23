@@ -1,22 +1,24 @@
 from typing import Union
-from src.scraper.async_base_scraper import BasePlaywrightScraper    
+from src.scraper.async_base_scraper import BasePlaywrightScraper
 from urllib.parse import urljoin
 from src.utils.web_utils import WebUtils
 from src.utils.file_utils import FileUtils
 import os
 from src.config.log_config import setup_logging
 from typing import Optional
-from playwright.async_api import Page 
+from playwright.async_api import Page
 from playwright.async_api import TimeoutError
 from src.config.config import scraper_config
 
 filename = os.path.basename(__file__)
 logger = setup_logging(filename=filename)
 
+
 class FrontierScraper(BasePlaywrightScraper):
     element_timeout = scraper_config.TIMEOUT_DURATION
-    
-    async def download_pdf(self, url: str, download_path: str) -> Union[str, bool]:
+
+    async def download_pdf(
+            self, url: str, download_path: str) -> Union[str, bool]:
         try:
             logger.info(f"Attempting to download PDF from Frontier: {url}")
             download_link = await self._get_download_link(url)
@@ -47,18 +49,20 @@ class FrontierScraper(BasePlaywrightScraper):
             if page:
                 await page.close()
 
-    async def _interact_with_dropdown(self, page:Page):
+    async def _interact_with_dropdown(self, page: Page):
         dropdown = page.locator("css=#FloatingButtonsEl > button")
         if await dropdown.count() > 0:
             try:
                 await dropdown.click(timeout=self.element_timeout)
                 logger.info("Successfully clicked dropdown")
             except TimeoutError as timeout_e:
-                logger.warning(f"Timeout while interacting with dropdown: {timeout_e}")
+                logger.warning(
+                    f"Timeout while interacting with dropdown: {timeout_e}")
             except Exception as e:
-                logger.warning(f"Unexpected error while interacting with dropdown: {e}")
+                logger.warning(
+                    f"Unexpected error while interacting with dropdown: {e}")
 
-    async def _extract_download_link(self, page:Page) -> str:
+    async def _extract_download_link(self, page: Page) -> str:
         download_element = page.get_by_role('link', name="Download PDF")
 
         if await download_element.count() == 0:
@@ -72,10 +76,10 @@ class FrontierScraper(BasePlaywrightScraper):
     async def _check_file_size(self, download_link: str) -> bool:
         """
         Verify if the file size is within acceptable limits.
-        
+
         Args:
             download_link (str): URL of the file to check
-            
+
         Returns:
             bool: True if file size is acceptable, False otherwise
         """
@@ -87,8 +91,8 @@ class FrontierScraper(BasePlaywrightScraper):
 
         if file_size > FileUtils.MAX_FILE_SIZE:
             logger.warning(
-                f"File size {file_size} bytes exceeds maximum limit of {FileUtils.MAX_FILE_SIZE} bytes"
-            )
+                f"File size {file_size} bytes exceeds maximum limit of {
+                    FileUtils.MAX_FILE_SIZE} bytes")
             return False
 
         return True

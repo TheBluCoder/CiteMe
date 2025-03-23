@@ -4,6 +4,7 @@ from src.config.log_config import setup_logging
 filename = os.path.basename(__file__)
 logger = setup_logging(filename=filename)
 
+
 class FileUtils:
     """
     A utility class providing static methods for common file operations.
@@ -17,7 +18,7 @@ class FileUtils:
     MAX_FILE_SIZE = 5 * ONE_MB
 
     @staticmethod
-    def check_file_exists(url: str, target_directory: str) -> str| bool:
+    def check_file_exists(url: str, target_directory: str) -> str | bool:
         """
         Check if a file exists in the specified directory based on the URL.
 

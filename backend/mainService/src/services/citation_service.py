@@ -3,7 +3,8 @@ from src.scraper.async_searchApi import SearchApi
 from src.llm.chat_llm.Groq_llm import Summarize_llm
 from src.scraper.async_content_scraper import AsyncContentScraper as ACS
 from src.llm.Async_prepare_data_for_embedding import create_batches, chunk_text, create_batches_from_doc
-import asyncio,os
+import asyncio
+import os
 from src.llm.Pinecone import PineconeOperations
 from src.utils.format_rerank_result import filter_mixbread_results
 from src.config.log_config import setup_logging
@@ -11,19 +12,19 @@ from src.llm.chat_llm.Azure_llm import Citation
 from src.config.config import LlmConfig as LLMEC
 from src.config.config import concurrency_config, search_config
 from src.custom_exceptions.llm_exceptions import CitationGenerationError
-from src.llm.embedding_utils.reranker import rerank,format_for_rerank
+from src.llm.embedding_utils.reranker import rerank, format_for_rerank
 from src.utils.index_operation import add_index_to_memory
 from concurrent.futures import ThreadPoolExecutor
 from langchain_core.documents import Document
 from src.services.source_credibility_metric_service import get_credibility_metrics, calculate_overall_score
-import json
 from src.models.schema import Source
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 log_filename = os.path.basename(__file__)
 logger = setup_logging(filename=log_filename)
 
-_index_executor = ThreadPoolExecutor(max_workers=concurrency_config.HANDLE_INDEX_DELETE_WORKERS)
+_index_executor = ThreadPoolExecutor(
+    max_workers=concurrency_config.HANDLE_INDEX_DELETE_WORKERS)
 
 
 class CitationService:
@@ -46,11 +47,16 @@ class CitationService:
         process_citation: Main method for generating citations
     """
 
-    def __init__(self, PC:PineconeOperations, scraper:ACS, summarize_llm:Summarize_llm, citation_llm:Citation):
+    def __init__(
+            self,
+            PC: PineconeOperations,
+            scraper: ACS,
+            summarize_llm: Summarize_llm,
+            citation_llm: Citation):
         self.PC = PC
         self.summarize_llm = summarize_llm
         self.citation_llm = citation_llm
-        self.scraper = scraper     
+        self.scraper = scraper
 
     async def process_single_query(self, query: str) -> Dict[str, Any]:
         """
@@ -65,19 +71,19 @@ class CitationService:
             Dict[str, Any]: The processed results
 
         """
-        logger.info(f"Processing query")
+        logger.info(f"Processing query {query}")
         search_results = await self.PC.hybrid_query(query=query, top_k=5)
         formatted_results = format_for_rerank(search_results['matches'])
         reranked_results = await rerank(matches=formatted_results, query=query, top_n=1, rank_fields=["page_content"])
         return reranked_results
-
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10),
         retry=retry_if_exception_type(Exception)
     )
-    async def process_queries(self, queries: List[str]) -> List[Dict[str, Any]]:
+    async def process_queries(
+            self, queries: List[str]) -> List[Dict[str, Any]]:
         """
         Process multiple queries concurrently.
 
@@ -92,16 +98,24 @@ class CitationService:
         try:
             # Create tasks for all queries
             tasks = [self.process_single_query(query) for query in queries]
-            
+
             # Process all queries concurrently
             results = await asyncio.gather(*tasks)
             return results
-            
+
         except Exception as e:
             logger.exception(f"Error in batch query processing: {str(e)}")
-            raise CitationGenerationError("Failed to process queries after multiple retries") from e
+            raise CitationGenerationError(
+                "Failed to process queries after multiple retries") from e
 
-    async def process_citation(self, title: str, content: str,form_type: str, style: str = "APA", sources: List[Dict] = None, supplement_urls: bool = False) -> Dict[str, Any] | False:
+    async def process_citation(self,
+                               title: str,
+                               content: str,
+                               form_type: str,
+                               style: str = "APA",
+                               sources: List[Dict] = None,
+                               supplement_urls: bool = False) -> Dict[str,
+                                                                      Any] | False:
         """
         Main orchestrator for citation generation process.
 
@@ -112,28 +126,27 @@ class CitationService:
 
         Returns:
             Dict[str, Any] | False: Citation results or False if error occurs
-        
+
         """
         try:
-            #Step 0: Generate index name
+            # Step 0: Generate index name
             title = (self.summarize_llm.getKeywordSearchTerm(content)
-                         if title.lower() == "untitled" else title)
+                     if title.lower() == "untitled" else title)
             index_name = self._generate_index_name(title)
             logger.info(f"index_name = {index_name}")
             if await self.PC.set_current_index(index_name):
                 logger.info(f"Index set to {index_name}")
                 return await self._generate_citations(content, style)
-               
+
             # Step 1: Get sources
             processed_docs = None
             if form_type == "auto":
                 search_results = await self._get_search_results(title)
                 processed_docs = await self._process_documents(search_results)
             elif form_type == "web":
-                processed_docs = await self.process_web_sources(title=title,sources=sources, supplement_urls=supplement_urls)
+                processed_docs = await self.process_web_sources(title=title, sources=sources, supplement_urls=supplement_urls)
             elif form_type == "source":
                 processed_docs = await self.process_direct_sources(sources)
-
 
             # Step 2: Create and populate index
             index_success = await self._create_and_populate_index(processed_docs, index_name=index_name)
@@ -146,8 +159,12 @@ class CitationService:
         except Exception as e:
             logger.exception(f"Error in citation process: {str(e)}")
             return False
-        
-    async def process_web_sources(self, sources: List[Source], supplement_urls: bool, title:str) -> Dict[str, Any]:
+
+    async def process_web_sources(self,
+                                  sources: List[Source],
+                                  supplement_urls: bool,
+                                  title: str) -> Dict[str,
+                                                      Any]:
         """Handle web form sources with optional supplementary URLs"""
         max_sources = search_config.TOP_N
         if supplement_urls:
@@ -156,16 +173,16 @@ class CitationService:
             additional_results = await self._get_search_results(search_key=title, top_n=remaining_slots)
             sources_dict = additional_results.copy()
             for item in sources:
-                key = item.url 
+                key = item.url
                 sources_dict["cleaned_result"]["meta"][key] = item.model_dump()
                 sources_dict["cleaned_result"]["links"].append(key)
 
-            
         return await self._process_documents(sources_dict)
 
-    async def process_direct_sources(self, sources: List[Source]) -> Dict[str, Any]:
+    async def process_direct_sources(
+            self, sources: List[Source]) -> Dict[str, Any]:
         """Handle direct source content without searching"""
-        
+
         sources_as_docs = [
             Document(
                 page_content=source.content,
@@ -173,14 +190,14 @@ class CitationService:
             )
             for source in sources
         ]
-        
+
         # Await batch creation for efficient processing
         batches = await create_batches_from_doc(sources_as_docs, LLMEC.BATCH_SIZE)
-        
+
         return {"batches": batches}
 
-
-    async def _get_search_results(self, search_key: str,top_n:Optional[int]=None) -> Dict[str, Any] | False:
+    async def _get_search_results(
+            self, search_key: str, top_n: Optional[int] = None) -> Dict[str, Any] | False:
         """
         Get search terms and perform initial search.
         Here we use the google search_api to find sources that are relevant to the content.
@@ -192,14 +209,15 @@ class CitationService:
         """
 
         try:
-            
+
             cleaned_result = await SearchApi.clean_search(search_key, top_n=top_n)
             return {"search_key": search_key, "cleaned_result": cleaned_result}
         except Exception as e:
             logger.exception(f"Error getting search results: {str(e)}")
             return False
 
-    async def _process_documents(self, search_results: Dict[str, Any]) -> Dict[str, Any] | False:
+    async def _process_documents(
+            self, search_results: Dict[str, Any]) -> Dict[str, Any] | False:
         """
         Process and download documents from search results.
 
@@ -216,9 +234,9 @@ class CitationService:
                 target_urls=cleaned_result.get("links"),
                 storage_path=search_results["search_key"]
             )
-            
+
             return await self._prepare_document_batches(
-                download_results, 
+                download_results,
                 cleaned_result["meta"]
             )
         except Exception as e:
@@ -226,8 +244,8 @@ class CitationService:
             return False
 
     async def _prepare_document_batches(
-        self, 
-        download_results: Dict[str, Any], 
+        self,
+        download_results: Dict[str, Any],
         metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
@@ -236,13 +254,13 @@ class CitationService:
         Args:
             download_results (Dict[str, Any]): Results from the download operation
             metadata (Dict[str, Any]): Metadata for the documents
-        
+
         Returns:
             Dict[str, Any]: Document batches and storage path
-        
+
         """
         filtered_results = {}
-        
+
         # Update metadata with file paths
         for url, meta in metadata.items():
             if url in download_results["paths"]:
@@ -262,8 +280,8 @@ class CitationService:
         }
 
     async def _create_and_populate_index(
-        self, 
-        processed_docs: Dict[str, Any], 
+        self,
+        processed_docs: Dict[str, Any],
         index_name: str
     ) -> bool:
         """
@@ -275,7 +293,7 @@ class CitationService:
 
         Returns:
             bool: True if index creation and population is successful, False otherwise
-        
+
         """
         try:
             # Create index
@@ -285,7 +303,6 @@ class CitationService:
                 return False
             # Add index to memory
             _index_executor.submit(add_index_to_memory, index_name)
-
 
             # Populate index
             return await self._populate_index(processed_docs["batches"])
@@ -301,7 +318,7 @@ class CitationService:
             search_key (str): Search key for the index
         Returns:
             str: Valid index name
-        
+
         """
         return (search_key.strip()[:LLMEC.INDEX_NAME_LEN]
                 .replace(" ", "-")
@@ -315,14 +332,14 @@ class CitationService:
             batches (List[Any]): List of document batches
         Returns:
             bool: True if index population is successful, False otherwise
-        
+
         """
         try:
             initial_count = current_count = await self.PC.get_idx_stat()
             await self.PC.upsert_documents(batches=batches)
 
             # Wait for documents to be indexed
-            while current_count < initial_count + len(batches) :
+            while current_count < initial_count + len(batches):
                 await asyncio.sleep(1)
                 current_count = await self.PC.get_idx_stat()
                 logger.info("Upserting document to pinecone...")
@@ -332,7 +349,8 @@ class CitationService:
             logger.exception(f"Error populating index: {str(e)}")
             return False
 
-    async def _generate_citations(self, content: str, style: str) -> Dict[str, Any] | False:
+    async def _generate_citations(
+            self, content: str, style: str) -> Dict[str, Any] | False:
         """Generate citations from processed content.
 
         Args:
@@ -341,43 +359,45 @@ class CitationService:
 
         Returns:
             Dict[str, Any] | False: Citation results or False if error occurs
-        
-        
+
+
         """
         try:
             queries = chunk_text(
-                content, 
-                max_tokens=LLMEC.QUERY_TOKEN_SIZE, 
-                overlap_percent= 5
+                content,
+                max_tokens=LLMEC.QUERY_TOKEN_SIZE,
+                overlap_percent=5
             )
-            #RAG +  Rerank
+            # RAG +  Rerank
             results = await self.process_queries(queries)
             logger.info(f"size of reranked results:{len(results)}\n\n")
             filtered_results = filter_mixbread_results(results)
-            logger.info(f"size of filtered results:{len(filtered_results)}\n\n")
-            #Generrate citation
+            logger.info(
+                f"size of filtered results:{
+                    len(filtered_results)}\n\n")
+            # Generrate citation
             citation_task = Citation(source=filtered_results).cite(
-                text=queries, 
+                text=queries,
                 citation_style=style
             )
 
             sources_for_credibility = [
-            
                 {
-                    "title": result.get("title", ""),
-                    "link": result.get("link", "") or result.get("url", ""),
-                    "domain": result.get("domain", ""),
-                    "journal": result.get("journal_title", ""),
-                    "citation_doi": result.get("citation_doi", ""),
-                    "citation_references": result.get("references", [""]),
-                    "publication_date": result.get("publication_date", ""),
-                    "author_name": result.get("author_name", "") or result.get("author", "") or result.get("authors", ""),
-                    "abstract": result.get("abstract", ""),
-                    "issn": result.get("issn", ""),
-                    "type": result.get("type", "")
-                }
-                for result in filtered_results
-            ]
+                    "title": result.get(
+                        "title", ""), "link": result.get(
+                        "link", "") or result.get(
+                        "url", ""), "domain": result.get(
+                        "domain", ""), "journal": result.get(
+                            "journal_title", ""), "citation_doi": result.get(
+                                "citation_doi", ""), "citation_references": result.get(
+                                    "references", [""]), "publication_date": result.get(
+                                        "publication_date", ""), "author_name": result.get(
+                                            "author_name", "") or result.get(
+                                                "author", "") or result.get(
+                                                    "authors", ""), "abstract": result.get(
+                                                        "abstract", ""), "issn": result.get(
+                                                            "issn", ""), "type": result.get(
+                                                                "type", "")} for result in filtered_results]
             credibility_task = get_credibility_metrics(sources_for_credibility)
 
             # Wait for both tasks to complete
@@ -388,44 +408,49 @@ class CitationService:
             )
 
             if isinstance(citation_result, Exception):
-                logger.exception(f"Citation generation failed: {str(citation_result)}")
+                logger.exception(
+                    f"Citation generation failed: {
+                        str(citation_result)}")
                 raise CitationGenerationError("Failed to generate citations")
-                
+
             if isinstance(credibility_metrics, Exception):
-                logger.exception(f"Credibility metrics failed: {str(credibility_metrics)}")
+                logger.exception(
+                    f"Credibility metrics failed: {
+                        str(credibility_metrics)}")
                 credibility_metrics = []
 
             # Calculate overall credibility score
             overall_score = calculate_overall_score(credibility_metrics)
-            
+
             # Extract source details from credibility metrics
             sources = []
             if credibility_metrics:
-                sources = [item["data"] for item in credibility_metrics if item["status"] == "success"]
-            
+                sources = [
+                    item["data"] for item in credibility_metrics if item["status"] == "success"]
+
             # Structure the final response
             return {
                 "result": citation_result,
                 "overall_score": overall_score,
                 "sources": sources
             }
-            
+
         except CitationGenerationError as e:
             logger.exception(f"Error generating citation: {e}")
             return False
         except Exception as e:
-            logger.exception(f"Unexpected error in citation generation: {str(e)}")
+            logger.exception(
+                f"Unexpected error in citation generation: {
+                    str(e)}")
             return False
 
-            
 
-
-#TODO: store unique top 2 reranked results in a set
-#TODO: feed the above to an llm as context to generate a citation
-#TODO: Break the user content into large batches and ask the llm to generate a citation for each sentence/paragraph in a batch in the requested format
-#TODO: store the citation in a database
-#TODO: return the content with intext citations and reference list in json format
-#TODO: annotate code
-#TODO: clean up code: Get rid of code smells,magic numbers and bottlenecks
-#TODO: add tests
-#TODO: add more error handling
+# TODO: store unique top 2 reranked results in a set
+# TODO: feed the above to an llm as context to generate a citation
+# TODO: Break the user content into large batches and ask the llm to generate a citation for each sentence/paragraph in a batch in the requested format
+# TODO: store the citation in a database
+# TODO: return the content with intext citations and reference list in json format
+# TODO: annotate code
+# TODO: clean up code: Get rid of code smells,magic numbers and bottlenecks
+# TODO: add tests
+# TODO: add more error handling

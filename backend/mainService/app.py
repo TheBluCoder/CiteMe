@@ -17,12 +17,9 @@ origins = [
 ]
 
 
-
-
 @asynccontextmanager
 async def startup_event(app: FastAPI):
     load_dotenv()
-    
     app.state.playwright_driver = await ASD.create()
     app.state.pc = await PineconeOperations.create()
     app.state.summarize_llm = Summarize_llm()
@@ -44,7 +41,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,  # Allow specific origins
     allow_credentials=True,  # Allow cookies & authentication headers
-    allow_methods=["POST","GET","OPTIONS","HEAD"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_methods=["POST", "GET", "OPTIONS", "HEAD"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
 )
 
