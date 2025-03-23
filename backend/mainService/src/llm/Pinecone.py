@@ -265,11 +265,7 @@ class PineconeOperations:
             " ",
             "-").removesuffix(".pdf")
         page_num = metadata.get("page", "")
-        hash_ = f"{
-            hashlib.sha256(
-                str(
-                    datetime.now().timestamp()).encode()).hexdigest()[
-                -12:]}"
+        hash_ = f"{hashlib.sha256(str(datetime.now().timestamp()).encode()).hexdigest()[-12:]}"
         if batch_num:
             return f"{basename}-{page_num}-{chunk_num}-{hash_}-{batch_num}"
         return f"{basename}-{page_num}-{chunk_num}-{hash_}"
