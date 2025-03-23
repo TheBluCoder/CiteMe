@@ -18,8 +18,16 @@ jobs:
       with:
         python-version: '3.11'
         
-    - name: Install dependencies
+    - name: Install dependencies for mainService
       run: |
+        cd backend/mainService
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+        
+    - name: Install dependencies for metricService
+      run: |
+        cd backend/metricService
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements-test.txt
