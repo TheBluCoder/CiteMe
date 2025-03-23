@@ -41,9 +41,7 @@ class Summarize_llm:
             # Trim document if too long
             max_length = 4000  # Adjust based on model's context window
             if len(document) > max_length:
-                logger.warning(
-                    f"Document truncated from {
-                        len(document)} to {max_length} characters")
+                logger.warning(f"Document truncated from {len(document)} to {max_length} characters")
                 document = document[:max_length]
 
             # Make API call with error handling

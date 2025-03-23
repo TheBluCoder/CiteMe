@@ -61,8 +61,7 @@ class IBMScraper(BasePlaywrightScraper):
                         # Implement file size check using Playwright
                         size = WebUtils.get_file_size(download_link)
                         if size > FileUtils.MAX_FILE_SIZE:
-                            logger.warning(
-                                f"File size {size} exceeds maximum limit")
+                            logger.warning(f"File size {size} exceeds maximum limit")
                             return False
                     except Exception as e:
                         logger.warning(f"Could not check file size: {e}")

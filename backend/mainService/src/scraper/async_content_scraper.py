@@ -108,9 +108,7 @@ class AsyncContentScraper:
                 exc_info=True)
 
             if exc_type:
-                logger.error(
-                    "Exception in context manager", exc_info=(
-                        exc_type, exc_val, exc_tb))
+                logger.error("Exception in context manager", exc_info=(exc_type, exc_val, exc_tb))
 
     async def _setup_scrapers(self):
         self.scrapers: Dict[BasePlaywrightScraper] = {
