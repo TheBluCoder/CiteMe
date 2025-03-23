@@ -11,6 +11,7 @@ from src.utils.index_operation import start
 from dotenv import load_dotenv
 from src.scraper.async_content_scraper import AsyncContentScraper
 from fastapi.middleware.cors import CORSMiddleware
+import nltk
 
 origins = [
     "http://localhost:5173",  # Frontend running on localhost (React, Vue, etc.)
@@ -20,6 +21,7 @@ origins = [
 @asynccontextmanager
 async def startup_event(app: FastAPI):
     load_dotenv()
+    nltk.download('punkt')
     app.state.playwright_driver = await ASD.create()
     app.state.pc = await PineconeOperations.create()
     app.state.summarize_llm = Summarize_llm()
