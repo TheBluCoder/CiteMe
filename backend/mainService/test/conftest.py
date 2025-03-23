@@ -4,9 +4,15 @@ from fastapi import FastAPI
 from app import app
 from unittest.mock import AsyncMock, MagicMock
 from dotenv import load_dotenv
+import nltk
+from nltk.data import find
 
 load_dotenv()
-
+try:    
+    find('tokenizers/punkt')
+except LookupError as e:
+    nltk.download('punkt')
+    
 @pytest.fixture
 def test_client():
     return TestClient(app)
