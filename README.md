@@ -2,6 +2,8 @@
 
 CiteMe is a modern, full-stack application designed to help researchers and academics manage their citations and references efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
 
+🌐 **Live Demo**: [CiteMe Editor](https://cite-me-wpre.vercel.app/editor)
+
 ## 🚀 Features
 
 - **Smart Citation Suggestions**: AI-powered citation recommendations based on your research context
@@ -10,6 +12,23 @@ CiteMe is a modern, full-stack application designed to help researchers and acad
 - **Real-time Metrics**: Track citation impact and academic metrics
 - **Modern UI**: Responsive and intuitive user interface
 - **API Integration**: Seamless integration with academic databases and search engines
+
+## 📁 Project Structure
+
+```
+CiteMe/
+├── frontend/                 # Vue.js 3 frontend application
+│   ├── src/                 # Source code
+│   ├── public/              # Static assets
+│   ├── e2e/                 # End-to-end tests
+│   └── dist/                # Production build
+├── backend/
+│   ├── mainService/         # Core citation service
+│   └── metricsService/      # Analytics and metrics service
+├── .github/                 # GitHub workflows and templates
+├── docker-compose.yml       # Docker services configuration
+└── README.md               # Project documentation
+```
 
 ## 🏗️ Architecture
 
