@@ -22,6 +22,8 @@ origins = [
 async def startup_event(app: FastAPI):
     load_dotenv()
     nltk.download('punkt')
+    nltk.download('punkt_tab')
+
     app.state.playwright_driver = await ASD.create()
     app.state.pc = await PineconeOperations.create()
     app.state.summarize_llm = Summarize_llm()

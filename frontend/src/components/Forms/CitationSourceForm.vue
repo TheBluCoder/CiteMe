@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, computed } from 'vue';
 import CitationFormLayout from '@/components/Forms/CitationFormLayout.vue';
-import FormAddBtn from '@/components/Forms/formAddBtn.vue';
+import FormAddBtn from '@/components/Forms/FormAddBtn.vue';
 import FormRemoveBtn from '@/components/Forms/FormRemoveBtn.vue';
 import { useCitationFormActions } from '@/stores/useCitationFormActions.js';
 import useFormDataFormat from '@/stores/useFormDataFormat.js';
