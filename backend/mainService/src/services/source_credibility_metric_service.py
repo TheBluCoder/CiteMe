@@ -17,7 +17,10 @@ async def get_credibility_metrics(sources: List[Dict]) -> List[Dict]:
     Returns:
         List[Dict]: Credibility metrics for each source
     """
-    credibility_metrics_api = 'http://localhost:9050/api/v1/credibility/batch'
+    credibility_metrics_api = os.getenv('CREDIBILITY_API_URL','')
+    if not credibility_metrics_api:
+        logger.error("CREDIBILITY_API_URL is not set")
+        return []
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(
