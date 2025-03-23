@@ -91,8 +91,8 @@ class FrontierScraper(BasePlaywrightScraper):
 
         if file_size > FileUtils.MAX_FILE_SIZE:
             logger.warning(
-                f"File size {file_size} bytes exceeds maximum limit of {
-                    FileUtils.MAX_FILE_SIZE} bytes")
+                f"""File size {file_size} bytes exceeds maximum limit of {
+                    FileUtils.MAX_FILE_SIZE} bytes""")
             return False
 
         return True

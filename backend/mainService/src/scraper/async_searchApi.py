@@ -60,9 +60,7 @@ class SearchApi:
                 response.raise_for_status()
                 data = await response.json()
         except Exception as e:
-            logger.critical(
-                f"Error occurred while fetching search results: {
-                    str(e)}")
+            logger.critical(f"Error occurred while fetching search results: {str(e)}")
             raise e
 
         # with open("sample_output\\search_results.json", "w") as f:

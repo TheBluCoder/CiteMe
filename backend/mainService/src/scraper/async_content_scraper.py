@@ -103,14 +103,10 @@ class AsyncContentScraper:
                 await self._context.close()
         except Exception as e:
             # Log the exception even if it occurred during cleanup
-            logger.critical(
-                f"Exception while closing context: {e}",
-                exc_info=True)
+            logger.critical(f"Exception while closing context: {e}",exc_info=True)
 
             if exc_type:
-                logger.error(
-                    "Exception in context manager", exc_info=(
-                        exc_type, exc_val, exc_tb))
+                logger.error("Exception in context manager", exc_info=(exc_type, exc_val, exc_tb))
 
     async def _setup_scrapers(self):
         self.scrapers: Dict[BasePlaywrightScraper] = {
@@ -176,11 +172,7 @@ class AsyncContentScraper:
 
     async def get_pdfs(self,
                        target_urls: list[str],
-                       storage_path: Optional[str] = None) -> Dict[str,
-                                                                   Union[int,
-                                                                         Dict[str,
-                                                                              str],
-                                                                         Optional[str]]]:
+                       storage_path: Optional[str] = None) -> Dict[str,Union[int,Dict[str, str],Optional[str]]]:
         """Download multiple PDFs concurrently from the provided URLs.
 
         Args:

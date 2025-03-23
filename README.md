@@ -32,7 +32,9 @@ The application is built using a microservices architecture with three main comp
 ### Backend
 - Python 3.11
 - FastAPI
-- SQLAlchemy
+- Pinecone
+- Gemini
+- Azure hosted LLMs
 - LangChain
 - Various AI/ML libraries
 

@@ -17,7 +17,7 @@ const STORAGE_KEYS = {
 }
 
 const API_ENDPOINTS = {
-  GENERATE_CITATION: 'http://localhost:9020/citation/get_citation'
+  GENERATE_CITATION: import.meta.env.VITE_BACKEND_URL + '/citation/get_citation'
 }
 
 export const useCitationStore = defineStore('citation', () => {
@@ -125,7 +125,8 @@ export const useCitationStore = defineStore('citation', () => {
         let storedFormData = isAutoForm ? { formType: 'auto' } : localStorage.getItem(selectedForm)
 
         if (!isAutoForm) {
-            if (!editorContent.value.trim() || editorContent.value === '<p style="margin: 0; line-height: 1.4;"></p>') {
+            let strippedContent = stripHTML(editorContent.value)
+            if (!strippedContent.trim()) {
                 toast.error('Please add some content to cite')
                 return
             }
@@ -168,6 +169,16 @@ export const useCitationStore = defineStore('citation', () => {
             disableCiteMeBtn.value = false
         }
     }
+
+    function stripHTML(htmlString) {
+        // Create a temporary DOM element
+        const tempElement = document.createElement('div');
+        tempElement.innerHTML = htmlString;
+
+        // Extract and return the inner text
+        return tempElement.textContent || tempElement.innerText || '';
+    }
+
 
     return {
         // UI State
