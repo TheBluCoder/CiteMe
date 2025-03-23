@@ -20,24 +20,27 @@ Features:
 """
 
 from typing import Optional
-import aioredis
+from redis import asyncio as aioredis
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
 # Redis connection settings
-REDIS_URL = "redis://localhost:6379"
+# REDIS_URL = "redis://localhost:6379"
 redis_client: Optional[aioredis.Redis] = None
 
 async def init_redis():
     """Initialize Redis connection"""
     global redis_client
     try:
-        redis_client = await aioredis.from_url(
-            REDIS_URL,
-            encoding="utf-8",
-            decode_responses=True
-        )
+        redis_client = aioredis.Redis(
+    host='localhost',
+    port=6379,
+    db=0,
+    decode_responses=True
+)
+
+
     except Exception as e:
         logger.error(f"Failed to initialize Redis connection: {str(e)}")
         raise
