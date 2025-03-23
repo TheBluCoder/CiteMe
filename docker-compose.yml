@@ -1,32 +1,36 @@
 version: '3.8'
 
 services:
-  main-service:
+  main_service:
     build:
       context: ./backend/mainService
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "9020:8000"
+    env_file:
+      - ./backend/mainService/.env
     environment:
-      - ENVIRONMENT=production
+      - CREDIBILITY_API_URL=http://metrics_service:8000/api/v1/credibility/batch
     volumes:
       - ./backend/mainService:/app
     networks:
-      - citeme-network
+      - cite_me
+    depends_on:
+      - metrics_service
 
-  metrics-service:
+  metrics_service:
     build:
       context: ./backend/metricsService
       dockerfile: Dockerfile
     ports:
-      - "8001:8001"
-    environment:
-      - ENVIRONMENT=production
+      - "9050:8000"
+    env_file:
+      - ./backend/metricsService/.env
     volumes:
       - ./backend/metricsService:/app
     networks:
-      - citeme-network
+      - cite_me
 
 networks:
-  citeme-network:
+  cite_me:
     driver: bridge 
