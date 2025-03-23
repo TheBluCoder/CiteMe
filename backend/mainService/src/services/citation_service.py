@@ -372,9 +372,7 @@ class CitationService:
             results = await self.process_queries(queries)
             logger.info(f"size of reranked results:{len(results)}\n\n")
             filtered_results = filter_mixbread_results(results)
-            logger.info(
-                f"size of filtered results:{
-                    len(filtered_results)}\n\n")
+            logger.info(f"size of filtered results:{len(filtered_results)}\n\n")
             # Generrate citation
             citation_task = Citation(source=filtered_results).cite(
                 text=queries,
