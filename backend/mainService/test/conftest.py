@@ -10,8 +10,11 @@ from nltk.data import find
 load_dotenv()
 try:    
     find('tokenizers/punkt')
+    find('punkt_tab')
+
 except LookupError as e:
     nltk.download('punkt')
+    nltk.download('punkt_tab')
     
 @pytest.fixture
 def test_client():
