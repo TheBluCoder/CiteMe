@@ -7,6 +7,7 @@ import RightSidebar from '@/components/SideBar/RightSidebar.vue'
 import CitationSourceSelector from '@/components/CitationSourceSelector.vue'
 import CitationStyleSelector from '@/components/CitationStyleSelector.vue'
 import { provide, computed } from 'vue'
+import CiteMeLogo from '@/components/CiteMeLogo.vue';
 
 const store = useCitationStore()
 
@@ -57,22 +58,27 @@ const citationStyle = defineModel('citationStyle')
                 <CitationStyleSelector v-model:citation-style="citationStyle" />
             </Teleport>
 
-            <!-- Main content area -->
-            <div class="mx-auto flex h-[calc(100vh-76px)] w-[90%] flex-col lg:w-[800px]">
-                <!-- Citation Source Selector -->
-                <div v-if="!store.isPreviewMode" class="flex-shrink-0 py-2">
-                    <CitationSourceSelector v-model:selected-form="selectedForm" />
-                </div>
+            <div class="flex relative">
+                <!-- Main content area -->
+                <div class="mx-auto flex h-[calc(100vh-76px)] w-[90%] flex-col lg:w-[800px]">
+                    <!-- Citation Source Selector -->
+                    <div v-if="!store.isPreviewMode" class="flex-shrink-0 py-2">
+                        <CitationSourceSelector v-model:selected-form="selectedForm" />
+                    </div>
 
-                <!-- Router view -->
-                <router-view
-                    class="flex-grow overflow-hidden"
-                    :key="$route.path"
-                    v-model:editorContent="store.editorContent"
-                    :preview-content="store.previewContent"
-                    @edit="store.editPreview"
-                />
+
+                    <!-- Router view -->
+                    <router-view
+                        class="flex-grow overflow-hidden"
+                        :key="$route.path"
+                        v-model:editorContent="store.editorContent"
+                        :preview-content="store.previewContent"
+                        @edit="store.editPreview"
+                    />
+                </div>
             </div>
+
+
         </div>
 
         <!-- Right sidebar toggle button -->
