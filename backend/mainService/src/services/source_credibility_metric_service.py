@@ -33,11 +33,11 @@ def _calculate_source_score(metric: Dict, source: Dict,
         rerank_score = source["rerank_score"]
         
         # Normalize rerank score to 0-1 range
-        normalized_rerank = min(max(rerank_score, 0), 1)
+        normalized_rerank = min(max(rerank_score, 0), 1)* 100
         
         # Calculate weighted score and normalize to 0-100 range
         weighted_score = round((normalized_rerank * rerank_weight + 
-                              credibility_score * credibility_weight) * 100, 2)
+                              credibility_score * credibility_weight) , 2)
         
         # Update the credibility score in the metric data
         metric["data"]["credibility_score"] = weighted_score
@@ -54,7 +54,7 @@ async def get_credibility_metrics(sources: List[Dict]) -> List[Dict]:
         return []
     
     # Configure timeout
-    timeout = aiohttp.ClientTimeout(total=10)
+    timeout = aiohttp.ClientTimeout(total=20)
     
     try:
         async with aiohttp.ClientSession(timeout=timeout) as session:
