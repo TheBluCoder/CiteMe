@@ -106,6 +106,10 @@ async def calculate_credibility(request: CredibilityRequest) -> Dict[str, Any]:
             "authorship_reputation": results.get('author', 0)
         }
 
+        # Debug logging
+        logger.info(f"Final result before caching: {result}")
+        logger.info(f"Total score calculation: {total_score} (total_weight: {total_weight})")
+
         # Cache the result
         await set_cache(cache_key, result)
         

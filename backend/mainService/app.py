@@ -12,6 +12,9 @@ from dotenv import load_dotenv
 from src.scraper.async_content_scraper import AsyncContentScraper
 from fastapi.middleware.cors import CORSMiddleware
 import nltk
+from src.utils.concurrent_resources import cleanup_resources
+
+
 
 origins = [
     "http://localhost:5173",  # Frontend running on localhost (React, Vue, etc.)
@@ -37,6 +40,7 @@ async def startup_event(app: FastAPI):
     await app.state.playwright_driver.quit()
     await app.state.pc.cleanup()
     await AsyncHTTPClient.close_session()
+    cleanup_resources()  # Clean up thread pool and other concurrent resources
 
 
 app = FastAPI(lifespan=startup_event)

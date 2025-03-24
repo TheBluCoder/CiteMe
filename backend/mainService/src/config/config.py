@@ -98,17 +98,16 @@ class LlmConfig:
 # Concurrency and Performance
 @dataclass
 class ConcurrencyConfig:
-    """Configuration class for concurrency settings.
+    """Configuration class for concurrency settings."""
 
-    Contains settings that control parallel processing and thread management."""
-    """Configuration for concurrency and performance settings."""
-
-    """
-        This is the number of concurrent workers that will be used for parallel and concurrent operations.
-    """
+    # General concurrency settings
     DEFAULT_CONCURRENT_WORKERS: int = (os.cpu_count() // 2) + 1
-
     HANDLE_INDEX_DELETE_WORKERS: int = 2
+
+    # Credibility service specific settings
+    CREDIBILITY_MAX_THREADS: int = 4  # Maximum threads for credibility calculations
+    CREDIBILITY_MAX_CONCURRENT: int = 8  # Maximum concurrent operations
+    CREDIBILITY_BATCH_SIZE: int = 4  # Size of processing batches
 
 
 @dataclass
