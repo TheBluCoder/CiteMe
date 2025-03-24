@@ -72,89 +72,69 @@ async def test_get_credibility_metrics_exception():
         # Assert
         assert result == []
 
-def test_calculate_overall_score_success():
-    # Arrange
+@pytest.mark.asyncio
+async def test_calculate_overall_score_success():
+    # Test data
     credibility_metrics = [
         {
             "status": "success",
-            "data": {
-                "credibility_score": 0.85
-            }
-        },
+            "data": {"credibility_score": 0.8}
+        }
+    ]
+    sources_with_scores = [
         {
-            "status": "success",
-            "data": {
-                "credibility_score": 0.75
-            }
+            "rerank_score": 0.9
         }
     ]
 
-    # Act
-    result = calculate_overall_score(credibility_metrics)
+    result = await calculate_overall_score(credibility_metrics, sources_with_scores)
+    assert isinstance(result, dict)
+    assert "overall_score" in result
+    assert "source_scores" in result
+    assert result["overall_score"] == 86.00  # (0.9 * 0.6 + 0.8 * 0.4) * 100
 
-    # Assert
-    assert result == 0.80  # (0.85 + 0.75) / 2
+@pytest.mark.asyncio
+async def test_calculate_overall_score_empty():
+    result = await calculate_overall_score([], [])
+    assert result["overall_score"] == 0.00
+    assert result["source_scores"] == []
 
-def test_calculate_overall_score_empty():
-    # Arrange
-    credibility_metrics = []
-
-    # Act
-    result = calculate_overall_score(credibility_metrics)
-
-    # Assert
-    assert result == 0.0
-
-def test_calculate_overall_score_mixed_status():
-    # Arrange
+@pytest.mark.asyncio
+async def test_calculate_overall_score_mixed_status():
     credibility_metrics = [
-        {
-            "status": "success",
-            "data": {
-                "credibility_score": 0.85
-            }
-        },
-        {
-            "status": "error",
-            "data": {
-                "credibility_score": 0.75
-            }
-        }
+        {"status": "success", "data": {"credibility_score": 0.8}},
+        {"status": "failed", "data": {"credibility_score": 0.5}}
+    ]
+    sources_with_scores = [
+        {"rerank_score": 0.9},
+        {"rerank_score": 0.7}
     ]
 
-    # Act
-    result = calculate_overall_score(credibility_metrics)
+    result = await calculate_overall_score(credibility_metrics, sources_with_scores)
+    print(result)
+    assert len(result["source_scores"]) == 2
+    assert result["source_scores"][0] == 86.00
 
-    # Assert
-    assert result == 0.85  # Only considers successful responses
-
-def test_calculate_overall_score_missing_data():
-    # Arrange
+@pytest.mark.asyncio
+async def test_calculate_overall_score_missing_data():
     credibility_metrics = [
-        {
-            "status": "success"
-        }
+        {"status": "success", "data": {}}
+    ]
+    sources_with_scores = [
+        {"rerank_score": 0.9}
     ]
 
-    # Act
-    result = calculate_overall_score(credibility_metrics)
+    result = await calculate_overall_score(credibility_metrics, sources_with_scores)
+    assert result["overall_score"] == 0.00
 
-    # Assert
-    assert result == 0.0
-
-def test_calculate_overall_score_exception():
-    # Arrange
+@pytest.mark.asyncio
+async def test_calculate_overall_score_exception():
     credibility_metrics = [
-        {
-            "status": "success",
-            "data": {
-                "credibility_score": "invalid"  # Invalid score type
-            }
-        }
+        {"status": "success", "data": None}
+    ]
+    sources_with_scores = [
+        {"rerank_score": 0.9}
     ]
 
-    # Act
-    result = calculate_overall_score(credibility_metrics)
-
-    # Assert
-    assert result == 0.0 
+    result = await calculate_overall_score(credibility_metrics, sources_with_scores)
+    assert result["overall_score"] == 0.00 

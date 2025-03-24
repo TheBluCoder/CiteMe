@@ -46,3 +46,5 @@ def mock_playwright_driver():
     mock_driver = AsyncMock()
     mock_driver.quit = AsyncMock()
     return mock_driver 
+
+pytest_plugins = ['pytest_asyncio'] 
