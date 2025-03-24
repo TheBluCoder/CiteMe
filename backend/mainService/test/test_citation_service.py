@@ -186,7 +186,10 @@ async def test_process_citation_auto_success(
     
     # Mock credibility metrics
     mock_get_credibility_metrics.return_value = [{"status": "success", "data": {"title": "Test Source"}}]
-    mock_calculate_overall_score.return_value = 0.8
+    mock_calculate_overall_score.return_value = {
+        "overall_score": 84.00,
+        "source_scores": [84.00]
+    }
 
     # Mock document processing
     mock_doc = MagicMock()
@@ -210,7 +213,7 @@ async def test_process_citation_auto_success(
     assert "overall_score" in result
     assert "sources" in result
     assert result["result"] == ["Test Citation"]
-    assert result["overall_score"] == 0.8
+    assert result["overall_score"] == 84.00
     assert len(result["sources"]) == 1
 
 @pytest.mark.asyncio
@@ -299,7 +302,10 @@ async def test_process_citation_web_success(
     
     # Mock credibility metrics
     mock_get_credibility_metrics.return_value = [{"status": "success", "data": {"title": "Test Source"}}]
-    mock_calculate_overall_score.return_value = 0.8
+    mock_calculate_overall_score.return_value = {
+        "overall_score": 84.00,
+        "source_scores": [84.00]
+    }
 
     # Mock document processing
     mock_doc = MagicMock()
@@ -325,7 +331,7 @@ async def test_process_citation_web_success(
     assert "overall_score" in result
     assert "sources" in result
     assert result["result"] == ["Test Citation"]
-    assert result["overall_score"] == 0.8
+    assert result["overall_score"] == 84.00
     assert len(result["sources"]) == 1
 
 @pytest.mark.asyncio
@@ -407,7 +413,10 @@ async def test_process_citation_source_success(
     
     # Mock credibility metrics
     mock_get_credibility_metrics.return_value = [{"status": "success", "data": {"title": "Test Source"}}]
-    mock_calculate_overall_score.return_value = 0.8
+    mock_calculate_overall_score.return_value = {
+        "overall_score": 84.00,
+        "source_scores": [84.00]
+    }
 
     # Mock document processing
     mock_doc = MagicMock()
@@ -432,7 +441,7 @@ async def test_process_citation_source_success(
     assert "overall_score" in result
     assert "sources" in result
     assert result["result"] == ["Test Citation"]
-    assert result["overall_score"] == 0.8
+    assert result["overall_score"] == 84.00
     assert len(result["sources"]) == 1
 
 @pytest.mark.asyncio
@@ -506,7 +515,10 @@ async def test_process_citation_existing_index(
     
     # Mock credibility metrics
     mock_get_credibility_metrics.return_value = [{"status": "success", "data": {"title": "Test Source"}}]
-    mock_calculate_overall_score.return_value = 0.8
+    mock_calculate_overall_score.return_value = {
+        "overall_score": 84.00,
+        "source_scores": [84.00]
+    }
 
     # Mock document processing
     mock_doc = MagicMock()
@@ -530,7 +542,7 @@ async def test_process_citation_existing_index(
     assert "overall_score" in result
     assert "sources" in result
     assert result["result"] == ["Test Citation"]
-    assert result["overall_score"] == 0.8
+    assert result["overall_score"] == 84.00
     assert len(result["sources"]) == 1
 
 @pytest.mark.asyncio
@@ -638,7 +650,10 @@ async def test_process_citation_mla_style(
     
     # Mock credibility metrics
     mock_get_credibility_metrics.return_value = [{"status": "success", "data": {"title": "Test Source"}}]
-    mock_calculate_overall_score.return_value = 0.8
+    mock_calculate_overall_score.return_value = {
+        "overall_score": 84.00,
+        "source_scores": [84.00]
+    }
 
     # Mock document processing
     mock_doc = MagicMock()

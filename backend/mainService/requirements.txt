@@ -24,4 +24,5 @@ lxml==5.3.0
 google-genai
 redis>=4.2.0
 uvicorn
+httpx>=0.28.1
 

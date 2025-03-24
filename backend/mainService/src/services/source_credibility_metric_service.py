@@ -46,25 +46,18 @@ def _calculate_source_score(metric: Dict, source: Dict,
 async def get_credibility_metrics(sources: List[Dict]) -> List[Dict]:
     """
     Call the credibility API to get metrics for sources.
-    Uses connection pooling and timeout handling for better performance.
-
-    Args:
-        sources (List[Dict]): List of source metadata
-
-    Returns:
-        List[Dict]: Credibility metrics for each source
+    Uses timeout handling for better reliability.
     """
     credibility_metrics_api = os.getenv('CREDIBILITY_API_URL','')
     if not credibility_metrics_api:
         logger.error("CREDIBILITY_API_URL is not set")
         return []
     
-    # Configure timeout and connection settings
-    timeout = aiohttp.ClientTimeout(total=10)  # 10 seconds total timeout
-    connector = aiohttp.TCPConnector(limit=10)  # Limit concurrent connections
+    # Configure timeout
+    timeout = aiohttp.ClientTimeout(total=10)
     
     try:
-        async with aiohttp.ClientSession(timeout=timeout, connector=connector) as session:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(
                 credibility_metrics_api,
                 json={'sources': sources},
@@ -81,8 +74,6 @@ async def get_credibility_metrics(sources: List[Dict]) -> List[Dict]:
     except Exception:
         logger.exception("Error calling credibility API")
         return []
-    finally:
-        connector.close()
 
 async def calculate_overall_score(credibility_metrics: List[Dict], sources_with_scores: List[Dict],
                                 rerank_weight: float = 0.6, credibility_weight: float = 0.4) -> Dict[str, Any]:
