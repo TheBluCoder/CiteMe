@@ -99,7 +99,7 @@ class AsyncContentScraper:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:
             if self._context:
-                self.scraper_driver.quit()
+                await self.scraper_driver.quit()
                 await self._context.close()
         except Exception as e:
             # Log the exception even if it occurred during cleanup

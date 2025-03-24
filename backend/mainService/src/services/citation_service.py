@@ -368,64 +368,58 @@ class CitationService:
                 max_tokens=LLMEC.QUERY_TOKEN_SIZE,
                 overlap_percent=5
             )
-            # RAG +  Rerank
+            # RAG + Rerank
             results = await self.process_queries(queries)
-            logger.info(f"size of reranked results:{len(results)}\n\n")
             filtered_results = filter_mixbread_results(results)
-            logger.info(f"size of filtered results:{len(filtered_results)}\n\n")
-            # Generrate citation
+
+            sources_with_scores = [
+                {
+                    "title": result.get("title", ""),
+                    "link": result.get("link", "") or result.get("url", ""),
+                    "domain": result.get("domain", ""),
+                    "journal": result.get("journal_title", ""),
+                    "citation_doi": result.get("citation_doi", ""),
+                    "citation_references": result.get("references", [""]),
+                    "publication_date": result.get("publication_date", ""),
+                    "author_name": result.get("author_name", "") or result.get("author", "") or result.get("authors", ""),
+                    "abstract": result.get("abstract", ""),
+                    "issn": result.get("issn", ""),
+                    "type": result.get("type", ""),
+                    "rerank_score": result.get("score", 0)
+                } for result in filtered_results
+            ]
+
+            credibility_task = get_credibility_metrics(sources_with_scores)
             citation_task = Citation(source=filtered_results).cite(
                 text=queries,
                 citation_style=style
             )
 
-            sources_for_credibility = [
-                {
-                    "title": result.get(
-                        "title", ""), "link": result.get(
-                        "link", "") or result.get(
-                        "url", ""), "domain": result.get(
-                        "domain", ""), "journal": result.get(
-                            "journal_title", ""), "citation_doi": result.get(
-                                "citation_doi", ""), "citation_references": result.get(
-                                    "references", [""]), "publication_date": result.get(
-                                        "publication_date", ""), "author_name": result.get(
-                                            "author_name", "") or result.get(
-                                                "author", "") or result.get(
-                                                    "authors", ""), "abstract": result.get(
-                                                        "abstract", ""), "issn": result.get(
-                                                            "issn", ""), "type": result.get(
-                                                                "type", "")} for result in filtered_results]
-            credibility_task = get_credibility_metrics(sources_for_credibility)
+            # Start both tasks but handle credibility metrics first
+            credibility_metrics = await asyncio.gather(credibility_task, return_exceptions=True)
+            
+            if isinstance(credibility_metrics[0], Exception):
+                logger.exception(f"Credibility metrics failed: {str(credibility_metrics[0])}")
+                credibility_metrics = []
+            else:
+                credibility_metrics = credibility_metrics[0]
 
-            # Wait for both tasks to complete
-            citation_result, credibility_metrics = await asyncio.gather(
-                citation_task,
-                credibility_task,
-                return_exceptions=True
-            )
+            # Calculate scores immediately after getting credibility metrics
+            scores = await calculate_overall_score(credibility_metrics, sources_with_scores, 
+                                          rerank_weight=0.6, credibility_weight=0.4)
 
+            sources = [
+                item["data"] for item in credibility_metrics if item["status"] == "success"
+            ] if credibility_metrics else []
+
+            citation_result = await citation_task
             if isinstance(citation_result, Exception):
                 logger.exception(f"Citation generation failed: {str(citation_result)}")
                 raise CitationGenerationError("Failed to generate citations")
 
-            if isinstance(credibility_metrics, Exception):
-                logger.exception(f"Credibility metrics failed: {str(credibility_metrics)}")
-                credibility_metrics = []
-
-            # Calculate overall credibility score
-            overall_score = calculate_overall_score(credibility_metrics)
-
-            # Extract source details from credibility metrics
-            sources = []
-            if credibility_metrics:
-                sources = [
-                    item["data"] for item in credibility_metrics if item["status"] == "success"]
-
-            # Structure the final response
             return {
                 "result": citation_result,
-                "overall_score": overall_score,
+                "overall_score": scores["overall_score"],
                 "sources": sources
             }
 
@@ -436,13 +430,3 @@ class CitationService:
             logger.exception(f"Unexpected error in citation generation: {str(e)}")
             return False
 
-
-# TODO: store unique top 2 reranked results in a set
-# TODO: feed the above to an llm as context to generate a citation
-# TODO: Break the user content into large batches and ask the llm to generate a citation for each sentence/paragraph in a batch in the requested format
-# TODO: store the citation in a database
-# TODO: return the content with intext citations and reference list in json format
-# TODO: annotate code
-# TODO: clean up code: Get rid of code smells,magic numbers and bottlenecks
-# TODO: add tests
-# TODO: add more error handling

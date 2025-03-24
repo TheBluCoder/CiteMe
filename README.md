@@ -2,6 +2,8 @@
 
 CiteMe is a modern, full-stack application designed to help researchers and academics manage their citations and references efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
 
+🌐 **Live Demo**: [CiteMe Editor](https://cite-me-wpre.vercel.app/editor)
+
 ## 🚀 Features
 
 - **Smart Citation Suggestions**: AI-powered citation recommendations based on your research context
@@ -10,6 +12,23 @@ CiteMe is a modern, full-stack application designed to help researchers and acad
 - **Real-time Metrics**: Track citation impact and academic metrics
 - **Modern UI**: Responsive and intuitive user interface
 - **API Integration**: Seamless integration with academic databases and search engines
+
+## 📁 Project Structure
+
+```
+CiteMe/
+├── frontend/                 # Vue.js 3 frontend application
+│   ├── src/                 # Source code
+│   ├── public/              # Static assets
+│   ├── e2e/                 # End-to-end tests
+│   └── dist/                # Production build
+├── backend/
+│   ├── mainService/         # Core citation service
+│   └── metricsService/      # Analytics and metrics service
+├── .github/                 # GitHub workflows and templates
+├── docker-compose.yml       # Docker services configuration
+└── README.md               # Project documentation
+```
 
 ## 🏗️ Architecture
 
@@ -46,7 +65,7 @@ The application is built using a microservices architecture with three main comp
 - Node.js 20+ (for local frontend development)
 - Python 3.11+ (for local backend development)
 
-### Running with Docker
+### Running with Docker Compose (Recommended for Local Development)
 
 1. Clone the repository:
 ```bash
@@ -54,21 +73,52 @@ git clone https://github.com/yourusername/citeme.git
 cd citeme
 ```
 
-2. Create a `.env` file in the root directory with necessary environment variables:
-```env
-# Add your environment variables here
-```
+2. Create `.env` files in both service directories:
+   - `backend/mainService/.env`
+   - `backend/metricsService/.env`
 
-3. Build and run the backend services using Docker Compose:
+3. Build and run the services using Docker Compose:
 ```bash
 docker-compose up --build
 ```
 
-The backend services will be available at:
-- Main Service: http://localhost:8000
-- Metrics Service: http://localhost:8001
+The services will be available at:
+- Main Service: http://localhost:9020
+- Metrics Service: http://localhost:9050
 
-### Local Development
+### Running Services Individually
+
+If you need to run services separately:
+
+1. Create the Docker network:
+```bash
+docker network create cite_me
+```
+
+2. Run the Metrics Service:
+```bash
+cd backend/metricsService
+docker build -t metrics_service .
+docker run -p 9050:8000 \
+  --name ms \
+  --network cite_me \
+  --env-file .env \
+  metrics_service
+```
+
+3. Run the Main Service:
+```bash
+cd backend/mainService
+docker build -t main_service .
+docker run -p 9020:8000 \
+  --name mbs \
+  --network cite_me \
+  --env-file .env \
+  -e CREDIBILITY_API_URL=http://ms:8000/api/v1/credibility/batch \
+  main_service
+```
+
+### Local Development Without Docker
 
 #### Frontend
 ```bash
@@ -83,7 +133,7 @@ cd backend/mainService
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app:app --reload --port 9020
 ```
 
 #### Metrics Service
@@ -92,14 +142,14 @@ cd backend/metricsService
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn src.main:app --reload --port 9050
 ```
 
 ## 📚 API Documentation
 
 Once the services are running, you can access the API documentation at:
-- Main Service: http://localhost:8000/docs
-- Metrics Service: http://localhost:8001/docs
+- Main Service: http://localhost:9020/docs
+- Metrics Service: http://localhost:9050/docs
 
 ## 🧪 Testing
 

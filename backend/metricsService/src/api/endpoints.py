@@ -44,14 +44,27 @@ async def compute_credibility(
     """Calculate credibility score for a single source"""
     try:
         result = await calculate_credibility(request)
+        # Store the total score before modifying the result
+        total_score = result.get("total_score", 0)
+        
         if detailed:
-            credibility_score = result.pop("total_score", 0)
-            return {"status": "success", "data": {"credibility_score": credibility_score,"component": result, "url": request.domain, "title": request.title, "type": request.type}}
+            # Don't pop the total_score, just create a new dict without it for components
+            components = {k: v for k, v in result.items() if k != "total_score"}
+            return {
+                "status": "success", 
+                "data": {
+                    "credibility_score": total_score,
+                    "component": components,
+                    "url": request.domain,
+                    "title": request.title,
+                    "type": request.type
+                }
+            }
         else:
             return {
                 "status": "success",
                 "data": {
-                    "credibility_score": result["total_score"],
+                    "credibility_score": total_score,
                     "url": request.domain,
                     "title": request.title,
                     "type": request.type
