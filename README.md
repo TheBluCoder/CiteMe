@@ -1,6 +1,11 @@
-# CiteMe - Academic Citation Management System
+# CiteMe - Automatic Citation Generation System
 
-CiteMe is a modern, full-stack application designed to help researchers and academics manage their citations and references efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
+CiteMe is a modern, full-stack application designed to help students generate references and in-line citations and references efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
+
+Students do not have to worry about searching for sources to back essays and thesis. This web app will search the web , format your document with intext citation and include the references, sources and metrics to grade the credibility of the sources.
+
+The webapp also offers the choice of providing your own sources, in forms of urls, texts and pdfs and is able to use these sources to format your essays/thesis with intext citation and references in any citation format.
+
 
 🌐 **Live Demo**: [CiteMe Editor](https://cite-me-wpre.vercel.app/editor)
 
