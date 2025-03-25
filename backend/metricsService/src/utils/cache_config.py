@@ -20,13 +20,13 @@ Features:
 """
 
 from typing import Optional
+import os
 from redis import asyncio as aioredis
 from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
-# Redis connection settings
-# REDIS_URL = "redis://localhost:6379"
+# Redis connection settings from environment variables
 redis_client: Optional[aioredis.Redis] = None
 
 async def init_redis():
@@ -34,13 +34,12 @@ async def init_redis():
     global redis_client
     try:
         redis_client = aioredis.Redis(
-    host='localhost',
-    port=6379,
-    db=0,
-    decode_responses=True
-)
-
-
+            host=os.getenv('REDIS_HOST', 'localhost'),
+            port=int(os.getenv('REDIS_PORT', '6379')),
+            db=int(os.getenv('REDIS_DB', '0')),
+            password=os.getenv('REDIS_PASSWORD'),
+            decode_responses=True
+        )
     except Exception as e:
         logger.error(f"Failed to initialize Redis connection: {str(e)}")
         raise
