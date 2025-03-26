@@ -230,10 +230,11 @@ class CitationService:
 
         try:
             cleaned_result = search_results["cleaned_result"]
-            download_results = await self.scraper.get_pdfs(
-                target_urls=cleaned_result.get("links"),
-                storage_path=search_results["search_key"]
-            )
+            async with asyncio.timeout(15):  # 15 second timeout
+                download_results = await self.scraper.get_pdfs(
+                    target_urls=cleaned_result.get("links"),
+                    storage_path=search_results["search_key"]
+                )
 
             return await self._prepare_document_batches(
                 download_results,

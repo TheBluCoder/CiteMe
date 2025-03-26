@@ -186,14 +186,14 @@ class PineconeOperations:
 
         :param index_name: Name of the index to set as current
         """
+        if not await self._pc.has_index(index_name):
+                return False
         if not self._current_index_name == index_name and self._current_index:
             await self._current_index.close()
         elif self._current_index_name == index_name:
             return True
 
         if not index_host:
-            if not await self._pc.has_index(index_name):
-                return False
             index_model = await self._pc.describe_index(index_name)
             self._current_index_host = index_model.host
         else:

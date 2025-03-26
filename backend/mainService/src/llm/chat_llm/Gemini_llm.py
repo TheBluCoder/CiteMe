@@ -11,7 +11,7 @@ logger = setup_logging(filename=log_filename)
 
 
 class Genai_cite:
-    model = "gemini-2.0-pro-exp-02-05"
+    model = "gemini-2.0-flash"
 
     def __init__(self, api_key: str = os.getenv("GOOGLE_API_KEY"),
                  llm_model: str = f'models/{model}'):

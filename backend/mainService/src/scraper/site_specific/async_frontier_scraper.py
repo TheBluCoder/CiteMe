@@ -38,7 +38,7 @@ class FrontierScraper(BasePlaywrightScraper):
         try:
             page = await self.context.new_page()
             if not url.endswith("pdf"):
-                await page.goto(url, wait_until='networkidle')
+                await page.goto(url, wait_until='networkidle', timeout=self.element_timeout)
                 await self._interact_with_dropdown(page)
                 download_link = await self._extract_download_link(page)
             else:
