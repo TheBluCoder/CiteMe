@@ -59,3 +59,4 @@ unit_test.py
 testing_workflow.py
 *.yaml
 
+scripts/

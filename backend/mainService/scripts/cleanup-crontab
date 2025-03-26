@@ -1,1 +1,0 @@
-*/30 * * * * /app/scripts/run_cleanup.sh >> /var/log/cleanup.log 2>&1 

@@ -37,7 +37,8 @@ from scholarly import scholarly
 from ..utils.api_config import (
     ORCID_API,
     SEMANTIC_SCHOLAR_AUTHOR_SEARCH_API,
-    OPEN_ALEX_AUTHOR_API
+    OPEN_ALEX_AUTHOR_API,
+    DEFAULT_TIMEOUT
 )
 from ..utils.api_utils import rate_limit
 from ..utils.logging_config import get_logger
@@ -64,7 +65,7 @@ async def get_authorship_reputation(author_id: Optional[str] = None, author_name
             orcid_response = requests.get(
                 f"{ORCID_API}{author_id}/works",
                 headers={"Accept": "application/json"},
-                timeout=15
+                timeout=DEFAULT_TIMEOUT
             )
             if orcid_response.status_code == 200:
                 orcid_data = orcid_response.json()
@@ -119,7 +120,7 @@ async def get_openalex_author_reputation(author_name: str):
     """Fetch author reputation from OpenAlex using the authors endpoint."""
     await rate_limit()
     try:
-        response = requests.get(f"{OPEN_ALEX_AUTHOR_API}?search={author_name}", timeout=10)
+        response = requests.get(f"{OPEN_ALEX_AUTHOR_API}?search={author_name}", timeout=DEFAULT_TIMEOUT)
         if response.status_code == 200:
             data = response.json()
             if data.get("results"):
@@ -138,7 +139,7 @@ async def get_semantic_scholar_author_reputation(author_name: str):
     await rate_limit()
     try:
         params = {"query": author_name, "fields": "hIndex,paperCount", "limit": 1}
-        response = requests.get(SEMANTIC_SCHOLAR_AUTHOR_SEARCH_API, params=params, timeout=10)
+        response = requests.get(SEMANTIC_SCHOLAR_AUTHOR_SEARCH_API, params=params, timeout=DEFAULT_TIMEOUT)
         if response.status_code == 200:
             data = response.json()
             if data.get("data") and len(data["data"]) > 0:

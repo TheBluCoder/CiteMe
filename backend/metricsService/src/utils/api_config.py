@@ -34,3 +34,4 @@ OBSERVATORY_API = "https://http-observatory.security.mozilla.org/api/v1/analyze"
 OPEN_CITATIONS_API = "https://opencitations.net/index/api/v1/"
 MAX_CONCURRENT_WORKERS = 20
 DEFAULT_CONCURRENT_WORKERS = 10
+DEFAULT_TIMEOUT = 10

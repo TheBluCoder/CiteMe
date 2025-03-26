@@ -31,17 +31,6 @@ RUN mkdir -p /app/config
 # Install playwright
 RUN playwright install && playwright install-deps 
 
-# Make the cleanup script executable
-RUN chmod +x /app/scripts/run_cleanup.sh
-
-# Add crontab file
-COPY ./scripts/cleanup-crontab /etc/cron.d/cleanup-cron
-RUN chmod 0644 /etc/cron.d/cleanup-cron
-RUN echo "" >> /etc/cron.d/cleanup-cron && crontab /etc/cron.d/cleanup-cron
-
-# Create log directory
-RUN mkdir -p /var/log
-
 # Expose the port the app runs on
 EXPOSE 8000
 
