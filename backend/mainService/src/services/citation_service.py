@@ -130,8 +130,7 @@ class CitationService:
         """
         try:
             # Step 0: Generate index name
-            title = (self.summarize_llm.getKeywordSearchTerm(content)
-                     if title.lower() == "untitled" else title)
+            title = self.summarize_llm.getKeywordSearchTerm(content, proposed_title=title)
             index_name = self._generate_index_name(title)
             logger.info(f"index_name = {index_name}")
             if await self.PC.set_current_index(index_name):
@@ -230,10 +229,11 @@ class CitationService:
 
         try:
             cleaned_result = search_results["cleaned_result"]
-            download_results = await self.scraper.get_pdfs(
-                target_urls=cleaned_result.get("links"),
-                storage_path=search_results["search_key"]
-            )
+            async with asyncio.timeout(15):  # 15 second timeout
+                download_results = await self.scraper.get_pdfs(
+                    target_urls=cleaned_result.get("links"),
+                    storage_path=search_results["search_key"]
+                )
 
             return await self._prepare_document_batches(
                 download_results,
