@@ -18,6 +18,7 @@ from src.utils.concurrent_resources import cleanup_resources
 
 origins = [
     "http://localhost:5173",  # Frontend running on localhost (React, Vue, etc.)
+    "https://cite-me.vercel.app"
 ]
 
 
@@ -47,7 +48,7 @@ app = FastAPI(lifespan=startup_event)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allow specific origins
+    allow_origins=["*"],  # Allow specific origins. modify this to allow only the your desired origins
     allow_credentials=True,  # Allow cookies & authentication headers
     allow_methods=["POST", "GET", "OPTIONS", "HEAD"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
