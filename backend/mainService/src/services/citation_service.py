@@ -71,7 +71,7 @@ class CitationService:
             Dict[str, Any]: The processed results
 
         """
-        logger.info(f"Processing query {query}")
+        logger.info(f"Processing query {query[:15]}")
         search_results = await self.PC.hybrid_query(query=query, top_k=5)
         formatted_results = format_for_rerank(search_results['matches'])
         reranked_results = await rerank(matches=formatted_results, query=query, top_n=1, rank_fields=["page_content"])

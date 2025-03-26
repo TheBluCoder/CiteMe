@@ -112,7 +112,6 @@ def filter_mixbread_results(
         if doc.get("id") not in seen_ids and result.score >= benchmark:
             seen_ids.add(doc.pop("id"))
             doc["score"] = result.score
-            print(f"doc: {doc}")
             unique_results.append(doc)
     # with open("sample_output\\rerank_result_mixbread.json", "a") as f:
     #     json.dump(unique_results, f, indent=4)
