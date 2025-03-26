@@ -19,7 +19,7 @@ class Summarize_llm:
         self.client = Groq(api_key=self.api_key)
         self.llm_model = llm_model
 
-    def getKeywordSearchTerm(self, document: str) -> Optional[str]:
+    def getKeywordSearchTerm(self, document: str, proposed_title: Optional[str] = None) -> str:
         """
         Generate a search term from the provided document using LLM.
 
@@ -46,12 +46,17 @@ class Summarize_llm:
 
             # Make API call with error handling
 
+            if proposed_title:
+                document = f"Here is the proposed title: {proposed_title}\n\nHere is the content: {document}"
+            else:
+                document = f"Here is the content: {document}"
+
             completion = self.client.chat.completions.create(
                 model=self.llm_model,
                 messages=[
                     {
                         "role": "user",
-                        "content": f"summarize the provided into a google search term and return a json response as 'search_term : value', if no content provided, your response should be 'message:no content to summarize'. Here is the content: {document}"
+                        "content": f"summarize the provided into a google search term and return a json response as 'search_term : value', if no content provided, your response should be 'message:no content to summarize'.{document}"
                     },
                 ],
                 temperature=0.9,

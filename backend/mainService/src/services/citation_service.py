@@ -130,8 +130,7 @@ class CitationService:
         """
         try:
             # Step 0: Generate index name
-            title = (self.summarize_llm.getKeywordSearchTerm(content)
-                     if title.lower() == "untitled" else title)
+            title = self.summarize_llm.getKeywordSearchTerm(content, proposed_title=title)
             index_name = self._generate_index_name(title)
             logger.info(f"index_name = {index_name}")
             if await self.PC.set_current_index(index_name):
