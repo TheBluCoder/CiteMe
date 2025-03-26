@@ -7,6 +7,7 @@ WORKDIR /app
 # Removes the package lists downloaded during the update to reduce the image size.
 RUN apt-get update && apt-get install -y \
     build-essential \
+    cron \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the PATH environment variable to include /app
@@ -30,9 +31,19 @@ RUN mkdir -p /app/config
 # Install playwright
 RUN playwright install && playwright install-deps 
 
+# Make the cleanup script executable
+RUN chmod +x /app/scripts/run_cleanup.sh
+
+# Add crontab file
+COPY ./scripts/cleanup-crontab /etc/cron.d/cleanup-cron
+RUN chmod 0644 /etc/cron.d/cleanup-cron
+RUN crontab /etc/cron.d/cleanup-cron
+
+# Create log directory
+RUN mkdir -p /var/log
+
 # Expose the port the app runs on
 EXPOSE 8000
 
-
-# Command to run the application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Start both cron and the FastAPI application
+CMD ["sh", "-c", "cron && uvicorn app:app --host 0.0.0.0 --port 8000"] 
