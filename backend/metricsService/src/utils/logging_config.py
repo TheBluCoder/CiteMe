@@ -26,6 +26,7 @@ from datetime import datetime
 from typing import Optional
 from logging import Logger
 
+logger = None # Global logger instance
 
 def setup_logging(
         log_level=logging.INFO,
@@ -43,6 +44,8 @@ def setup_logging(
         filename (str): Base filename for log files (default: 'log')
         logToFile (bool): Whether to log to file (default: False)
     """
+
+    global logger
     # Create a unique log filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%U")
 
@@ -63,5 +66,15 @@ def setup_logging(
         logger.addHandler(logging.FileHandler(log_filename))
         
     
+def get_logger(filename:str) -> Logger:
+    """
+    Get the configured logger instance.
+
+    Returns:
+        Logger: Configured logger instance
+    """
+    global logger
+    if logger is None:
+        setup_logging(filename=filename)
     return logger
 
