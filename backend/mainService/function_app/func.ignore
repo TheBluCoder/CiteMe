@@ -1,0 +1,3 @@
+# Ignore downloads directory to prevent function restarts
+downloads/
+*.pdf 
