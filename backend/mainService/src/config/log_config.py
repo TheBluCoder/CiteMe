@@ -1,3 +1,24 @@
+"""
+Logging Configuration Module
+
+This module handles the configuration of the application's logging system.
+It sets up both file(optional) and stream handlers with a standardized format for
+consistent logging throughout the application.
+
+Key Functions:
+- get_logger: Returns a configured logger instance
+
+Configuration:
+- Log level: INFO
+- Log format: Timestamp - Logger Name - Level - Message
+- Handlers: File handler
+
+Features:
+- Centralized logging configuration
+- Easy logger instance creation
+- Both file and stream output
+- Standardized log format
+"""
 import os
 import logging
 from datetime import datetime
@@ -18,6 +39,8 @@ def setup_logging(
     Args:
         log_level (int): Logging level (default: logging.INFO)
         log_dir (str): Directory to store log files (default: 'logs')
+        filename (str): Base filename for log files (default: 'log')
+        logToFile (bool): Whether to log to file (default: False)
     """
     # Create a unique log filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%U")

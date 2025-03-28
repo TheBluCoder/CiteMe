@@ -2,7 +2,7 @@
 Logging Configuration Module
 
 This module handles the configuration of the application's logging system.
-It sets up both file and stream handlers with a standardized format for
+It sets up both file(optional) and stream handlers with a standardized format for
 consistent logging throughout the application.
 
 Key Functions:
@@ -11,7 +11,7 @@ Key Functions:
 Configuration:
 - Log level: INFO
 - Log format: Timestamp - Logger Name - Level - Message
-- Handlers: File handler (app.log)
+- Handlers: File handler
 
 Features:
 - Centralized logging configuration
@@ -20,16 +20,48 @@ Features:
 - Standardized log format
 """
 
+import os
 import logging
+from datetime import datetime
+from typing import Optional
+from logging import Logger
 
-file_handler = logging.FileHandler('app.log')
-stream_handler = logging.StreamHandler()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[file_handler, stream_handler]
-)
+def setup_logging(
+        log_level=logging.INFO,
+        log_dir: str = 'logs',
+        filename: Optional[str] = 'log',
+        logToFile: Optional[bool] = False,
+        ) -> Logger:
+        
+    """
+    Set up a standardized logging configuration for the entire project.
 
-def get_logger(name):
-    return logging.getLogger(name)
+    Args:
+        log_level (int): Logging level (default: logging.INFO)
+        log_dir (str): Directory to store log files (default: 'logs')
+        filename (str): Base filename for log files (default: 'log')
+        logToFile (bool): Whether to log to file (default: False)
+    """
+    # Create a unique log filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%U")
+
+    # Configure logging
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler()  # Also log to console
+        ]
+    )
+    logger = logging.getLogger(filename)
+
+    if logToFile:
+        # Ensure logs directory exists
+        os.makedirs(log_dir, exist_ok=True)
+        log_filename = os.path.join(log_dir, f'{filename}_{timestamp}.log')
+        logger.addHandler(logging.FileHandler(log_filename))
+        
+    
+    return logger
+
