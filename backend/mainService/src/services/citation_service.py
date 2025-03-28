@@ -10,7 +10,7 @@ from src.utils.format_rerank_result import filter_mixbread_results
 from src.config.log_config import setup_logging
 from src.llm.chat_llm.Azure_llm import Citation
 from src.config.config import LlmConfig as LLMEC
-from src.config.config import concurrency_config, search_config
+from src.config.config import concurrency_config, search_config,scraper_config
 from src.custom_exceptions.llm_exceptions import CitationGenerationError
 from src.llm.embedding_utils.reranker import rerank, format_for_rerank
 from src.utils.index_operation import add_index_to_memory
@@ -229,7 +229,7 @@ class CitationService:
 
         try:
             cleaned_result = search_results["cleaned_result"]
-            async with asyncio.timeout(15):  # 15 second timeout
+            async with asyncio.timeout((scraper_config.TIMEOUT_DURATION*2)/1000):  # 20 second timeout
                 download_results = await self.scraper.get_pdfs(
                     target_urls=cleaned_result.get("links"),
                     storage_path=search_results["search_key"]
