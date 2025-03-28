@@ -32,7 +32,7 @@ class ScraperConfig:
     """
     This is the timeout duration for the requests made to the web scraper
     """
-    TIMEOUT_DURATION: int = 10000
+    TIMEOUT_DURATION: int = 30000  # Increased from 10000 to 30000 (30 seconds)
 
     def __post_init__(self):
         if self.MAX_FILE_SIZE <= 0:
