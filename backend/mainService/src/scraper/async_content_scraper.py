@@ -35,6 +35,10 @@ from datetime import timezone as tz
 log_filename = os.path.basename(__file__)
 logger = setup_logging(filename=log_filename)
 
+# Define the main downloads directory
+MAIN_DOWNLOADS_DIR = os.path.join(os.getcwd(), "downloads")
+os.makedirs(MAIN_DOWNLOADS_DIR, exist_ok=True)
+
 """
 Citation Content Scraper Module
 
@@ -136,15 +140,19 @@ class AsyncContentScraper:
             parsed_url = parse_url(target_url)
             base_url = f"{parsed_url.scheme}://{parsed_url.host}"
 
-            # Set up download path
+            # Set up download path in the main downloads directory
             if not storage_path:
-                default_path = parsed_url.host + \
-                    str(datetime.now(tz.utc).strftime("%d_%m_%Y_%H_%M_%S"))
-                storage_path = os.path.join(
-                    os.getcwd(), "downloads", default_path)
+                # Create a subdirectory for this request
+                request_dir = os.path.join(
+                    MAIN_DOWNLOADS_DIR,
+                    f"{parsed_url.host}_{datetime.now(tz.utc).strftime('%d_%m_%Y_%H_%M_%S')}"
+                )
+                storage_path = request_dir
             else:
-                storage_path = os.path.abspath(storage_path)
-
+                # If storage_path is provided, create it as a subdirectory of MAIN_DOWNLOADS_DIR
+                storage_path = os.path.join(MAIN_DOWNLOADS_DIR, storage_path)
+            
+            storage_path = os.path.abspath(storage_path)
             self.current_download_path = storage_path
 
             # Check robots.txt
@@ -187,8 +195,9 @@ class AsyncContentScraper:
         """
         results = {"count": 0, "paths": {}, "storage_path": None}
 
-        storage_path = storage_path + \
-            str(datetime.now(tz.utc).strftime("%d_%m_%Y_%H_%M_%S")) if storage_path else None
+        # Create a unique subdirectory for this batch of downloads
+        if storage_path:
+            storage_path = f"{storage_path}_{datetime.now(tz.utc).strftime('%d_%m_%Y_%H_%M_%S')}"
 
         # Create tasks for all downloads
         tasks = [self.get_pdf(url, storage_path) for url in target_urls]
