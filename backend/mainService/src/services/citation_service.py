@@ -10,11 +10,9 @@ from src.utils.format_rerank_result import filter_mixbread_results
 from src.config.log_config import setup_logging
 from src.llm.chat_llm.Azure_llm import Citation
 from src.config.config import LlmConfig as LLMEC
-from src.config.config import concurrency_config, search_config
+from src.config.config import search_config,scraper_config
 from src.custom_exceptions.llm_exceptions import CitationGenerationError
 from src.llm.embedding_utils.reranker import rerank, format_for_rerank
-from src.utils.index_operation import add_index_to_memory
-from concurrent.futures import ThreadPoolExecutor
 from langchain_core.documents import Document
 from src.services.source_credibility_metric_service import get_credibility_metrics, calculate_overall_score
 from src.models.schema import Source
@@ -22,9 +20,6 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 log_filename = os.path.basename(__file__)
 logger = setup_logging(filename=log_filename)
-
-_index_executor = ThreadPoolExecutor(
-    max_workers=concurrency_config.HANDLE_INDEX_DELETE_WORKERS)
 
 
 class CitationService:
@@ -229,7 +224,7 @@ class CitationService:
 
         try:
             cleaned_result = search_results["cleaned_result"]
-            async with asyncio.timeout(15):  # 15 second timeout
+            async with asyncio.timeout((scraper_config.TIMEOUT_DURATION*2)/1000):  # 20 second timeout
                 download_results = await self.scraper.get_pdfs(
                     target_urls=cleaned_result.get("links"),
                     storage_path=search_results["search_key"]
@@ -301,8 +296,6 @@ class CitationService:
             if not index:
                 logger.exception("Index creation failed")
                 return False
-            # Add index to memory
-            _index_executor.submit(add_index_to_memory, index_name)
 
             # Populate index
             return await self._populate_index(processed_docs["batches"])

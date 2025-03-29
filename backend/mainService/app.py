@@ -1,59 +1,34 @@
+import os
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from src.config.playwright_driver import PlaywrightDriver as ASD
-from src.config.async_http_session import AsyncHTTPClient
+from fastapi.middleware.cors import CORSMiddleware
+from src.config.startup import startup_event
 from src.controllers.citation_controller import router as citation_router
 from src.controllers.health_controller import router as health_router
-from src.llm.Pinecone import PineconeOperations
-from src.llm.chat_llm.Groq_llm import Summarize_llm
-from src.llm.chat_llm.Azure_llm import Citation
-from src.utils.index_operation import start
-from dotenv import load_dotenv
-from src.scraper.async_content_scraper import AsyncContentScraper
-from fastapi.middleware.cors import CORSMiddleware
-import nltk
-from src.utils.concurrent_resources import cleanup_resources
 
-
+# Detect if running in Azure Functions (serverless)
+IS_SERVERLESS = os.getenv("SERVERLESS").lower() == "true"  
 
 origins = [
     "http://localhost:5173",  # Frontend running on localhost (React, Vue, etc.)
     "https://cite-me.vercel.app"
 ]
 
+# Conditionally assign lifespan
+lifespan = startup_event if not IS_SERVERLESS else None
 
-@asynccontextmanager
-async def startup_event(app: FastAPI):
-    load_dotenv()
-    nltk.download('punkt')
-    nltk.download('punkt_tab')
+# Create FastAPI instance
+app = FastAPI(title="Citation API", version="1.0.0", lifespan=lifespan)
 
-    app.state.playwright_driver = await ASD.create()
-    app.state.pc = await PineconeOperations.create()
-    app.state.summarize_llm = Summarize_llm()
-    app.state.citation_llm = Citation()
-   # Initialize the async content scraper using its async context manager
-    async with AsyncContentScraper(playwright_driver=app.state.playwright_driver) as content_scraper:
-        app.state.async_content_scraper = content_scraper
-        start()
-        yield
-    # Exiting the async with block automatically calls __aexit__
-    await app.state.playwright_driver.quit()
-    await app.state.pc.cleanup()
-    await AsyncHTTPClient.close_session()
-    cleanup_resources()  # Clean up thread pool and other concurrent resources
-
-
-app = FastAPI(lifespan=startup_event)
-
+# Middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow specific origins. modify this to allow only the your desired origins
-    allow_credentials=True,  # Allow cookies & authentication headers
-    allow_methods=["POST", "GET", "OPTIONS", "HEAD"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_origins=["*"],  
+    allow_credentials=True,  
+    allow_methods=["POST", "GET", "OPTIONS", "HEAD"],  
+    allow_headers=["*"],  
 )
 
-# Include routers with prefixes
+# Include routers
 app.include_router(health_router, tags=["Health"])
 app.include_router(citation_router, prefix="/citation", tags=["Citation"])
+
