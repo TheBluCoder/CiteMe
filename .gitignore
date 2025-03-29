@@ -60,3 +60,6 @@ testing_workflow.py
 *.yaml
 
 scripts/
+playwright_browser
+local.settings.json
+function_app/
