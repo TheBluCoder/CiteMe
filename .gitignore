@@ -58,6 +58,10 @@ tempCodeRunnerFile.py
 unit_test.py
 testing_workflow.py
 *.yaml
+local.settings.json
+playwright_browser
+__pycache__
+docker-compose.yml
 
 scripts/
 playwright_browser
