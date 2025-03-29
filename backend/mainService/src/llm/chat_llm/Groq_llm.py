@@ -6,6 +6,7 @@ from src.config.log_config import setup_logging
 from typing import Optional
 from json.decoder import JSONDecodeError
 from src.custom_exceptions.llm_exceptions import SearchKeyGenerationError
+from src.config.config import model_config
 
 filename = os.path.basename(__file__)
 logger = setup_logging(filename=filename)
@@ -59,9 +60,9 @@ class Summarize_llm:
                         "content": f"summarize the provided into a google search term and return a json response as 'search_term : value', if no content provided, your response should be 'message:no content to summarize'.{document}"
                     },
                 ],
-                temperature=0.9,
-                top_p=1,
-                max_tokens=1024,
+                temperature=model_config.SUMMARIZE_LLM_TEMPERATURE,
+                top_p=model_config.DEFAULT_TOP_P,
+                max_tokens=200,
                 stream=False,
                 stop=None,
                 response_format={"type": "json_object"}

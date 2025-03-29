@@ -34,14 +34,15 @@ class ScraperConfig:
     """
     TIMEOUT_DURATION: int = 10000  # Increased from 10000 to 30000 (30 seconds)
 
-    # Define the main downloads directory
+    """
+    This is the path to the directory where the downloads will be stored.
+    """
     MAIN_DOWNLOADS_DIR_PATH: str = os.path.join("/tmp", "downloads")
 
-    CURRENT_FILE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # Go up one level from 'mainservice'
-
-    os.path.dirname("...") # Go up one level from 'src'
-
-    PLAYWRIGHT_EXE_PATH=os.path.join(os.path.dirname(os.path.realpath(CURRENT_FILE_PATH)), 'playwright_browser', 'chromium_headless_shell-1161', 'chrome-linux', 'headless_shell')
+    """
+    This is the path to the playwright executable.
+    """
+    PLAYWRIGHT_EXE_PATH=None # set to None if you want to use the default playwright executable
 
     def __post_init__(self):
         if self.MAX_FILE_SIZE <= 0:
@@ -95,14 +96,6 @@ class LlmConfig:
     """
     UPSERT_BATCH_SIZE: int = 1000
 
-    """
-    This is the llm that open router uses for generating the intext citation and reference list for each query
-    """
-    OPEN_ROUTER_MODEL: str = "meta-llama/llama-3.3-70b-instruct:free"
-
-    """
-    This is the azure model api endpoint
-    """
 
 
 # Concurrency and Performance
@@ -111,12 +104,24 @@ class ConcurrencyConfig:
     """Configuration class for concurrency settings."""
 
     # General concurrency settings
+    """
+        This is the number of concurrent workers that will be used to process the source documents.
+    """
     DEFAULT_CONCURRENT_WORKERS: int = (os.cpu_count() // 2) + 1
-    HANDLE_INDEX_DELETE_WORKERS: int = 2
 
-    # Credibility service specific settings
+    """
+        This is the maximum number of threads that will be used to calculate the credibility of the source documents.
+    """
     CREDIBILITY_MAX_THREADS: int = 4  # Maximum threads for credibility calculations
+
+    """
+        This is the maximum number of concurrent operations that will be used to calculate the credibility of the source documents.
+    """
     CREDIBILITY_MAX_CONCURRENT: int = 8  # Maximum concurrent operations
+
+    """
+        This is the size of the processing batches that will be used to calculate the credibility of the source documents.
+    """
     CREDIBILITY_BATCH_SIZE: int = 4  # Size of processing batches
 
 
@@ -127,13 +132,23 @@ class ModelConfig:
     Contains settings specific to AI models and their deployment."""
     """Configuration for ML models and APIs."""
 
-    MODEL_ID: str = "BAAI/bge-m3"
-    MODEL_API_URL: str = f"https://api-inference.huggingface.co/pipeline/feature-extraction/{MODEL_ID}"
-
     # LLM Generation Parameters
-    DEFAULT_TEMPERATURE: float = 0.5
-    DEFAULT_TOP_P: float = 1.0
-    DEFAULT_MAX_TOKENS: int = 1024
+    """
+        This is the temperature for the citation LLM.
+    """ 
+    CITE_LLM_TEMPERATURE: float = 0.1
+    """
+        This is the temperature for the summarize LLM.
+    """
+    SUMMARIZE_LLM_TEMPERATURE: float = 0.9
+    """
+        This is the top p for the citation LLM.
+    """
+    CITE_LLM_TOP_P: float = 0.1
+    """
+        This is the top p for the summarize LLM.
+    """
+    SUMMARIZE_LLM_TOP_P: float = 0.1
 
 
 @dataclass
