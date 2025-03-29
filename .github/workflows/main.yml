@@ -9,6 +9,7 @@ env:
   AZURE_API_KEY: 1JCm7aFbY2zVyXndOwAaljohGFAeFKjvwmDLa200gjSdlsLOqP3yJQQJ99BBACREanaXJ3w3AbgAACOG2ZyA
   GOOGLE_API_KEY: Adzac4B4-q3u3Q_lssqr_dc7k-WM28ygszsVrIe
   CREDIBILITY_API_URL: https://credibility-api.example.com
+  SERVERLESS: FALSE   
 
 on:
   push:
