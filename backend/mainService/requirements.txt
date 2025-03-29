@@ -27,4 +27,5 @@ uvicorn
 httpx>=0.28.1
 pypdf
 pypdf2
+azure-functions
 

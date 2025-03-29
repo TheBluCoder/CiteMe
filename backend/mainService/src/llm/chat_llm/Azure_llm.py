@@ -15,7 +15,7 @@ from azure.ai.inference.models import ChatCompletions
 from src.custom_exceptions.llm_exceptions import CitationGenerationError
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from src.config.config import concurrency_config
+from src.config.config import concurrency_config, model_config
 
 logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(
     logging.WARNING)
@@ -128,8 +128,11 @@ class Citation:
             Dict[str, Any]: Raw API response containing citation data
         """
         try:
-            response: ChatCompletions = self.client.complete(messages=messages, model=(
-                model_name or self.model_name), temperature=0.1, top_p=0.1)
+            response: ChatCompletions = self.client.complete(
+                messages=messages, 
+                model=(model_name or self.model_name), 
+                temperature=model_config.CITE_LLM_TEMPERATURE, 
+                top_p=model_config.CITE_LLM_TOP_P)
             response_content = response.choices[0].message.content
             # amazonq-ignore-next-line
             response_content = response_content.strip()
