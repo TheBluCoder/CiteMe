@@ -61,8 +61,6 @@ testing_workflow.py
 local.settings.json
 playwright_browser
 __pycache__
-backend/
-.github/
 docker-compose.yml
 
 scripts/
