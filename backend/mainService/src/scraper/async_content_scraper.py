@@ -30,14 +30,12 @@ from datetime import datetime
 from playwright.async_api import Browser, BrowserContext
 from src.config.log_config import setup_logging
 from datetime import timezone as tz
+from src.config.config import scraper_config
 
 
 log_filename = os.path.basename(__file__)
 logger = setup_logging(filename=log_filename)
 
-# Define the main downloads directory
-MAIN_DOWNLOADS_DIR = os.path.join(os.getcwd(), "downloads")
-os.makedirs(MAIN_DOWNLOADS_DIR, exist_ok=True)
 
 """
 Citation Content Scraper Module
@@ -144,13 +142,13 @@ class AsyncContentScraper:
             if not storage_path:
                 # Create a subdirectory for this request
                 request_dir = os.path.join(
-                    MAIN_DOWNLOADS_DIR,
+                    scraper_config.MAIN_DOWNLOADS_DIR_PATH,
                     f"{parsed_url.host}_{datetime.now(tz.utc).strftime('%d_%m_%Y_%H_%M_%S')}"
                 )
                 storage_path = request_dir
             else:
                 # If storage_path is provided, create it as a subdirectory of MAIN_DOWNLOADS_DIR
-                storage_path = os.path.join(MAIN_DOWNLOADS_DIR, storage_path)
+                storage_path = os.path.join(scraper_config.MAIN_DOWNLOADS_DIR_PATH, storage_path)
             
             storage_path = os.path.abspath(storage_path)
             self.current_download_path = storage_path

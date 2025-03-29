@@ -14,3 +14,7 @@ venv
 *.ini
 *.pyc
 __pycache__
+
+# Ignore downloads directory to prevent function restarts
+downloads/
+*.pdf 

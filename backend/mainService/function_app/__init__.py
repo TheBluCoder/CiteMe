@@ -41,10 +41,9 @@ async def get_resources():
         await asyncio.gather(
             playwright_driver.quit(),
             pc.cleanup(),
-            cleanup_resources(),
-            AsyncHTTPClient.close_session(),
             return_exceptions=True
         )
+        cleanup_resources()
         logging.info("Resources cleaned up successfully")
 
 async def main(req: func.HttpRequest, res: func.Out[func.HttpResponse]) -> func.HttpResponse:

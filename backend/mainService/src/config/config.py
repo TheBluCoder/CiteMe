@@ -32,13 +32,17 @@ class ScraperConfig:
     """
     This is the timeout duration for the requests made to the web scraper
     """
-    TIMEOUT_DURATION: int = 30000  # Increased from 10000 to 30000 (30 seconds)
+    TIMEOUT_DURATION: int = 10000  # Increased from 10000 to 30000 (30 seconds)
+
+    # Define the main downloads directory
+    MAIN_DOWNLOADS_DIR_PATH: str = os.path.join(os.getcwd(), "downloads")
 
     def __post_init__(self):
         if self.MAX_FILE_SIZE <= 0:
             raise ValueError("MAX_FILE_SIZE must be positive")
         if self.TIMEOUT_DURATION <= 0:
             raise ValueError("TIMEOUT_DURATION must be positive")
+        os.makedirs(self.MAIN_DOWNLOADS_DIR_PATH, exist_ok=True)
 
 
 @dataclass
