@@ -35,7 +35,13 @@ class ScraperConfig:
     TIMEOUT_DURATION: int = 10000  # Increased from 10000 to 30000 (30 seconds)
 
     # Define the main downloads directory
-    MAIN_DOWNLOADS_DIR_PATH: str = os.path.join(os.getcwd(), "downloads")
+    MAIN_DOWNLOADS_DIR_PATH: str = os.path.join("/tmp", "downloads")
+
+    CURRENT_FILE_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) # Go up one level from 'mainservice'
+
+    os.path.dirname("...") # Go up one level from 'src'
+
+    PLAYWRIGHT_EXE_PATH=os.path.join(os.path.dirname(os.path.realpath(CURRENT_FILE_PATH)), 'playwright_browser', 'chromium_headless_shell-1161', 'chrome-linux', 'headless_shell')
 
     def __post_init__(self):
         if self.MAX_FILE_SIZE <= 0:

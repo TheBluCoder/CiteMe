@@ -129,8 +129,9 @@ class PlaywrightDriver:
                 "--disable-blink-features=AutomationControlled",
             ]
             try:
+                exe_path = scraper_config.PLAYWRIGHT_EXE_PATH or None
                 self._playwright = await async_playwright().start()
-                self._browser = await self._playwright.chromium.launch(headless=True, args=args)
+                self._browser = await self._playwright.chromium.launch(headless=True, args=args, executable_path=exe_path)
             except Exception as e:
                 logger.critical(f"Error while initializing browser: {e}")
                 raise e

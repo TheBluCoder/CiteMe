@@ -6,6 +6,7 @@ __queuestorage__
 local.settings.json
 test
 venv
+.venv
 .git
 .vscode
 .env
@@ -14,6 +15,8 @@ venv
 *.ini
 *.pyc
 __pycache__
+pytest.ini
+pytest_cache
 
 # Ignore downloads directory to prevent function restarts
 downloads/
