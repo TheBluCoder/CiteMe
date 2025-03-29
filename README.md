@@ -1,11 +1,10 @@
 # CiteMe - Automatic Citation Generation System
 
-CiteMe is a modern, full-stack application designed to help students generate references and in-line citations and references efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
+CiteMe is a modern, full-stack application designed to help students generate references and in-line citations efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
 
-Students do not have to worry about searching for sources to back essays and thesis. This web app will search the web , format your document with intext citation and include the references, sources and metrics to grade the credibility of the sources.
+Students do not have to worry about searching for sources to back essays and thesis. This web app will search the web, format your document with intext citation and include the references, sources and metrics to grade the credibility of the sources.
 
 The webapp also offers the choice of providing your own sources, in forms of urls, texts and pdfs and is able to use these sources to format your essays/thesis with intext citation and references in any citation format.
-
 
 🌐 **Live Demo**: [CiteMe Editor](https://cite-me-wpre.vercel.app/editor)
 
@@ -17,6 +16,10 @@ The webapp also offers the choice of providing your own sources, in forms of url
 - **Real-time Metrics**: Track citation impact and academic metrics
 - **Modern UI**: Responsive and intuitive user interface
 - **API Integration**: Seamless integration with academic databases and search engines
+- **Web Scraping**: Intelligent web scraping with Playwright for source extraction
+- **Vector Search**: Efficient document retrieval using Pinecone vector database
+- **AI-Powered**: Integration with multiple AI models (Azure, Groq, Gemini) for citation generation
+- **Credibility Scoring**: Automated source credibility assessment
 
 ## 📁 Project Structure
 
@@ -29,10 +32,13 @@ CiteMe/
 │   └── dist/                # Production build
 ├── backend/
 │   ├── mainService/         # Core citation service
-│   └── metricsService/      # Analytics and metrics service
-├── .github/                 # GitHub workflows and templates
-├── docker-compose.yml       # Docker services configuration
-└── README.md               # Project documentation
+│   │   ├── src/            # Source code
+│   │   ├── scripts/        # Utility scripts
+│   │   └── config/         # Configuration files
+│   └── metricsService/     # Analytics and metrics service
+├── .github/                # GitHub workflows and templates
+├── docker-compose.yml      # Docker services configuration
+└── README.md              # Project documentation
 ```
 
 ## 🏗️ Architecture
@@ -41,7 +47,14 @@ The application is built using a microservices architecture with three main comp
 
 1. **Frontend Service**: Vue.js 3 application hosted on Vercel
 2. **Main Service**: FastAPI-based backend service handling core citation functionality
+   - Web scraping with Playwright
+   - Vector search with Pinecone
+   - AI model integration (Azure, Groq, Gemini)
+   - Citation generation and formatting
 3. **Metrics Service**: FastAPI-based service for handling academic metrics and analytics
+   - Source credibility assessment
+   - Citation impact analysis
+   - Academic metrics tracking
 
 ## 🛠️ Tech Stack
 
@@ -56,11 +69,33 @@ The application is built using a microservices architecture with three main comp
 ### Backend
 - Python 3.11
 - FastAPI
-- Pinecone
-- Gemini
+- Pinecone (Vector Database)
+- Gemini (Google AI)
+- Groq
 - Azure hosted LLMs
+- Mixbread (Reranking)
 - LangChain
+- Playwright (Web Scraping)
 - Various AI/ML libraries
+
+## 🔑 Environment Setup
+
+Before running the services, you'll need to set up the following API keys:
+
+1. Google API Keys:
+   - `CX`: Google Programmable Search Engine ID
+   - `GPSE_API_KEY`: Google Programmable Search Engine API key
+   - `GOOGLE_API_KEY`: Gemini API key
+
+2. AI Service Keys:
+   - `GROQ_API_KEY`: Groq API key
+   - `PINECONE_API_KEY`: Pinecone vector database
+   - `MIXBREAD_API_KEY`: Mixbread reranking service
+   - `AZURE_MODELS_ENDPOINT`: Azure endpoint for citation generation
+
+3. Optional Services:
+   - `CREDIBILITY_API_URL`: URL for the credibility metrics service
+   - `SERVERLESS`: Set to TRUE for serverless mode
 
 ## 🚀 Getting Started
 
@@ -78,9 +113,10 @@ git clone https://github.com/yourusername/citeme.git
 cd citeme
 ```
 
-2. Create `.env` files in both service directories:
-   - `backend/mainService/.env`
-   - `backend/metricsService/.env`
+2. Create a `.env` file in the root directory with all required API keys:
+```bash
+cp backend/mainService/.env.example .env
+```
 
 3. Build and run the services using Docker Compose:
 ```bash
@@ -178,7 +214,7 @@ pytest
 
 The backend services have their own Dockerfiles:
 
-- `backend/mainService/Dockerfile`: Python-based main service
+- `backend/mainService/Dockerfile`: Python-based main service with Playwright support
 - `backend/metricsService/Dockerfile`: Python-based metrics service
 
 ## 🤝 Contributing
