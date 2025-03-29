@@ -132,7 +132,7 @@ class Citation:
                 messages=messages, 
                 model=(model_name or self.model_name), 
                 temperature=model_config.CITE_LLM_TEMPERATURE, 
-                top_p=model_config.DEFAULT_TOP_P)
+                top_p=model_config.CITE_LLM_TOP_P)
             response_content = response.choices[0].message.content
             # amazonq-ignore-next-line
             response_content = response_content.strip()

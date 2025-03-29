@@ -61,7 +61,7 @@ class Summarize_llm:
                     },
                 ],
                 temperature=model_config.SUMMARIZE_LLM_TEMPERATURE,
-                top_p=model_config.DEFAULT_TOP_P,
+                top_p=model_config.SUMMARIZE_LLM_TOP_P,
                 max_tokens=200,
                 stream=False,
                 stop=None,
