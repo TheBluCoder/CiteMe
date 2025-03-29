@@ -85,7 +85,7 @@ const toggleView = () => {
                         type="text"
                         placeholder="Untitled"
                         required
-                        maxlength="50"
+                        maxlength="150"
                     />
                 </div>
 
