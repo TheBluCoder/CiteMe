@@ -210,6 +210,18 @@ cd ../metricsService
 pytest
 ```
 
+## 🔄 CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+- **Automated Testing**: Runs on every push to main and pull requests
+- **Python 3.11**: Uses the latest Python 3.11 environment
+- **Test Dependencies**: Installs both main and test requirements
+- **PR Management**: Automatically closes failed PRs with explanatory comments
+- **Environment Variables**: Securely manages API keys and configuration
+
+The pipeline can be found in `.github/workflows/python-ci-cd.yml`.
+
 ## 📦 Docker Images
 
 The backend services have their own Dockerfiles:
