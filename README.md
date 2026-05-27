@@ -1,3 +1,5 @@
+NOTE: This project is no longer live
+
 # CiteMe - Automatic Citation Generation System
 
 CiteMe is a modern, full-stack application designed to help students generate references and in-line citations efficiently. The system provides intelligent citation suggestions, reference management, and seamless integration with academic databases.
@@ -6,7 +8,7 @@ Students do not have to worry about searching for sources to back essays and the
 
 The webapp also offers the choice of providing your own sources, in forms of urls, texts and pdfs and is able to use these sources to format your essays/thesis with intext citation and references in any citation format.
 
-🌐 **Live Demo**: [CiteMe Editor](https://citeme.blucoder.cc/editor)
+🌐 **Used to be Live on **: [CiteMe Editor](https://citeme.blucoder.cc/editor)
 
 ## 🚀 Features
 
