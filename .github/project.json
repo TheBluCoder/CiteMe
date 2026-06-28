@@ -1,15 +1,18 @@
 [
   {
-    "name": "Citation Generation System",
-    "description": "CiteMe was a full-stack tool for generating references and in-line citations.\nIt suggested sources, integrated with academic databases, and automatically formatted essays with citations and references.\n\nUsers could also provide URLs, text, or PDFs for custom citation generation.\n\nNote: CiteMe is no longer operational.",
+    "name": "CiteMe",
+    "description": "An AI-assisted citation generation system for essays and research drafts. CiteMe combines a Vue 3 editor, FastAPI services, vector retrieval, web/PDF source processing, and source credibility scoring to generate in-text citations and references.",
+    "what": "CiteMe is a full-stack academic writing tool. The frontend is a Vue 3 single-page app with an editor, citation-source workflows, a preview/export surface, and a sidebar for source analysis. The backend is split into two Python FastAPI services: a main citation service that searches, scrapes, chunks, embeds, reranks, and generates citations, and a separate metrics service that scores source credibility. Users can auto-discover sources, provide URLs to cite from the web, or submit direct source content for citation generation.",
+    "why": "I wanted to make the citation workflow less mechanical for students writing essays and thesis-style documents. The interesting part was not just formatting references, but building a system that could retrieve supporting sources, generate citations in context, and expose some signal about source quality instead of treating all sources as equal.",
+    "impact": "The project shipped as a live web app and demonstrates a stronger applied-AI workflow than a simple citation formatter: retrieval, scraping, chunking, vector search, LLM generation, and credibility scoring all sit in the user path. The public demo previously lived at citeme.blucoder.cc; the project is no longer operational.",
     "image": "https://res.cloudinary.com/dao2elffs/image/upload/v1744039879/citeme_niijan.png",
     "video": "",
     "demo": "https://citeme.blucoder.cc/editor",
     "type": "website",
-    "source_code_url": "",
+    "source_code_url": "https://github.com/TheBluCoder/CiteMe",
     "tech_stack": [
       {
-        "name": "Vue.js 3",
+        "name": "Vue 3",
         "icon": "fa-brands fa-vuejs"
       },
       {
@@ -17,8 +20,16 @@
         "icon": "fa-solid fa-bolt"
       },
       {
-        "name": "TailwindCSS",
-        "icon": "fa-brands fa-tailwind-css"
+        "name": "Tailwind CSS",
+        "icon": "fa-brands fa-css3-alt"
+      },
+      {
+        "name": "TipTap",
+        "icon": "fa-solid fa-pen-nib"
+      },
+      {
+        "name": "Pinia",
+        "icon": "fa-solid fa-layer-group"
       },
       {
         "name": "Python",
@@ -30,26 +41,34 @@
       },
       {
         "name": "Pinecone",
-        "icon": "fa-solid fa-seedling"
+        "icon": "fa-solid fa-database"
+      },
+      {
+        "name": "Gemini",
+        "icon": "fa-solid fa-wand-magic-sparkles"
       },
       {
         "name": "Playwright",
         "icon": "fa-solid fa-vial"
-      },{
-        "name": "Azure AI foundry",
+      },
+      {
+        "name": "Azure Functions",
         "icon": "fa-solid fa-cloud"
-    
       }
     ],
     "deployment_stack": [
       "Vercel",
       "Docker",
-      "Azure functions"
+      "Azure Functions"
     ],
     "topics": [
-      "",
-      ""
+      "citation-generation",
+      "academic-writing",
+      "fastapi",
+      "vue3",
+      "rag",
+      "source-credibility"
     ],
-    "updated_at": ""
+    "updated_at": "2026-06-27"
   }
 ]
